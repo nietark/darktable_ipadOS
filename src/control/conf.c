@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <glib/gprintf.h>
+#include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>

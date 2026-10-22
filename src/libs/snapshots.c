@@ -30,6 +30,7 @@
 #include "gui/draw.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "dtgtk/togglebutton.h"
 
 DT_MODULE(1)
 

@@ -46,6 +46,7 @@
 #include "dtgtk/paint.h"
 #include "dtgtk/sidepanel.h"
 #include "dtgtk/thumbtable.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 

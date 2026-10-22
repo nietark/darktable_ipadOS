@@ -29,6 +29,7 @@
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "develop/tiling.h"
+#include "dtgtk/togglebutton.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
 

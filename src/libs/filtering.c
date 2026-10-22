@@ -26,6 +26,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/range.h"
 #include "dtgtk/rating_stars.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/collect.h"

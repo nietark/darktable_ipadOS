@@ -26,6 +26,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/preferences_dialogs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "develop/imageop.h"
+#include "dtgtk/paint.h"
 
 G_BEGIN_DECLS
 

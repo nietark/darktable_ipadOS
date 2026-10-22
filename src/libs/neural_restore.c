@@ -214,6 +214,7 @@
 #include "develop/format.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"

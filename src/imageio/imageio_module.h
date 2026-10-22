@@ -23,7 +23,6 @@
 #include "common/metadata_export.h"
 #include "common/action.h"
 #include <gmodule.h>
-#include <gtk/gtk.h>
 #include <inttypes.h>
 #ifdef USE_LUA
 #include "lua/call.h"
@@ -81,7 +80,7 @@ typedef struct dt_imageio_module_format_t
   GModule *module;
 
   // gui stuff:
-  GtkWidget *widget;
+  struct _GtkWidget *widget;
 
   // data for you to initialize
   void *gui_data;
@@ -105,7 +104,7 @@ typedef struct dt_imageio_module_storage_t
   GModule *module;
 
   // gui stuff:
-  GtkWidget *widget;
+  struct _GtkWidget *widget;
 
   // data for you to initialize
   void *gui_data;

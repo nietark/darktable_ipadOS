@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <cairo.h>
+#include <glib.h>
 #include <string.h>
 #include <librsvg/rsvg.h>
 

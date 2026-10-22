@@ -35,6 +35,7 @@
 #include "control/jobs.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/stylemenu.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"

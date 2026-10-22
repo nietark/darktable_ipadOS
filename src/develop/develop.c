@@ -3850,7 +3850,7 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
 }
 
 void dt_dev_exposure_handle_event(int n_press, gdouble delta,
-                                  GdkModifierType state,
+                                  guint state,
                                   const gboolean is_blackpoint)
 {
   if(dt_view_get_current() == DT_VIEW_DARKROOM

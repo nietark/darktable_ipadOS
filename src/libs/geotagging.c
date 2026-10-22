@@ -28,6 +28,7 @@
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "dtgtk/button.h"
+#include "dtgtk/togglebutton.h"
 #include "control/jobs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"

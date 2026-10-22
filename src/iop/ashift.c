@@ -32,6 +32,7 @@
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"

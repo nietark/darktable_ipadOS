@@ -20,6 +20,8 @@
 
 #include "chart/colorchart.h"
 
+#include <gtk/gtk.h>
+
 enum
 {
   TOP_LEFT = 0,

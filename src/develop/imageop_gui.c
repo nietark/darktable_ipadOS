@@ -20,6 +20,7 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/button.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "common/curve_tools.h"
 

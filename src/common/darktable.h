@@ -442,10 +442,10 @@ typedef struct dt_gimp_t
 
 typedef struct dt_splash_t
 {
-  GtkWidget *start_screen;
-  GtkWidget *progress_text;
-  GtkWidget *remaining_text;
-  GtkWidget *remaining_box;
+  struct _GtkWidget *start_screen;
+  struct _GtkWidget *progress_text;
+  struct _GtkWidget *remaining_text;
+  struct _GtkWidget *remaining_box;
   gboolean create_if_needed;
 } dt_splash_t;
 
@@ -711,34 +711,6 @@ static inline void dt_unlock_image_pair(const dt_imgid_t imgid1,
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
 }
-
-extern GdkModifierType dt_modifier_shortcuts;
-
-// check whether the specified mask of modifier keys exactly matches,
-// among the set Shift+Control+(Alt/Meta).  ignores the state of any
-// other shifting keys
-static inline gboolean dt_modifier_is(const GdkModifierType state,
-                                      const GdkModifierType desired_modifier_mask)
-{
-  const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
-//desired_modifier_mask to be the bit for the Cmd key
-  return ((state | dt_modifier_shortcuts) & modifiers) == desired_modifier_mask;
-}
-
-// check whether the given modifier state includes AT LEAST the
-// specified mask of modifier keys
-static inline gboolean dt_modifiers_include(const GdkModifierType state,
-                                            const GdkModifierType desired_modifier_mask)
-{
-//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
-//desired_modifier_mask to be the bit for the Cmd key
-  const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  // check whether all modifier bits of interest are turned on
-  return ((state | dt_modifier_shortcuts)
-          & (modifiers & desired_modifier_mask)) == desired_modifier_mask;
-}
-
 
 static inline gboolean dt_is_aligned(const void *pointer, const size_t byte_count)
 {

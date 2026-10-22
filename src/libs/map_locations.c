@@ -24,6 +24,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
+#include "dtgtk/togglebutton.h"
 #include <glib-2.0/gio/gio.h>
 #include <glib-2.0/gio/gmenu.h>
 #include <glib-2.0/gio/gmenumodel.h>

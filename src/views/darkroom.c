@@ -50,6 +50,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/stylemenu.h"
 #include "dtgtk/thumbtable.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/drag_and_drop.h"
