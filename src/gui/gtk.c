@@ -93,6 +93,41 @@
 
 #include <pthread.h>
 
+// the canvas event callbacks take GDK's modifier state, buttons and click
+// types as they are (common/input.h)
+G_STATIC_ASSERT((int)DT_MODIFIER_SHIFT == (int)GDK_SHIFT_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_CONTROL == (int)GDK_CONTROL_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_ALT == (int)GDK_MOD1_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_BUTTON1 == (int)GDK_BUTTON1_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_BUTTON2 == (int)GDK_BUTTON2_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_BUTTON3 == (int)GDK_BUTTON3_MASK);
+G_STATIC_ASSERT((int)DT_BUTTON_PRIMARY == (int)GDK_BUTTON_PRIMARY);
+G_STATIC_ASSERT((int)DT_BUTTON_MIDDLE == (int)GDK_BUTTON_MIDDLE);
+G_STATIC_ASSERT((int)DT_BUTTON_SECONDARY == (int)GDK_BUTTON_SECONDARY);
+G_STATIC_ASSERT((int)DT_BUTTON_PRESS == (int)GDK_BUTTON_PRESS);
+G_STATIC_ASSERT((int)DT_BUTTON_DOUBLE_PRESS == (int)GDK_2BUTTON_PRESS);
+G_STATIC_ASSERT((int)DT_BUTTON_TRIPLE_PRESS == (int)GDK_3BUTTON_PRESS);
+
+gboolean dt_modifier_is(const uint32_t state,
+                        const uint32_t desired_modifier_mask)
+{
+  const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
+//desired_modifier_mask to be the bit for the Cmd key
+  return ((state | dt_modifier_shortcuts) & modifiers) == desired_modifier_mask;
+}
+
+gboolean dt_modifiers_include(const uint32_t state,
+                              const uint32_t desired_modifier_mask)
+{
+//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
+//desired_modifier_mask to be the bit for the Cmd key
+  const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  // check whether all modifier bits of interest are turned on
+  return ((state | dt_modifier_shortcuts)
+          & (modifiers & desired_modifier_mask)) == desired_modifier_mask;
+}
+
 /*
  * NEW UI API
  */

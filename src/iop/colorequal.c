@@ -3206,7 +3206,7 @@ int scrolled(dt_iop_module_t *self,
   // Alt+scroll: switch channel tab, matching the graph's Alt+scroll
   // behavior (_area_scrolled_callback). Handled before the hue lookup
   // below since switching tabs doesn't need a hue reading.
-  if(dt_modifier_is(state, GDK_MOD1_MASK))
+  if(dt_modifier_is(state, DT_MODIFIER_ALT))
   {
     const int pages = gtk_notebook_get_n_pages(g->notebook);
     const int current = gtk_notebook_get_current_page(g->notebook);
@@ -3249,7 +3249,7 @@ int scrolled(dt_iop_module_t *self,
   // Ctrl for fine precision (÷10)
   const float base_step = (g->channel == HUE) ? 1.0f : 0.01f;
   dt_iop_gui_leave_critical_section(self);
-  const float step = dt_modifier_is(state, GDK_CONTROL_MASK) ? base_step * 0.1f : base_step;
+  const float step = dt_modifier_is(state, DT_MODIFIER_CONTROL) ? base_step * 0.1f : base_step;
   // up=1 → scroll up → increase value
   const float move = up ? +step : -step;
 

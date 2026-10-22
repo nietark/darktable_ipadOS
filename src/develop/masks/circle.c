@@ -127,7 +127,7 @@ static int _circle_events_mouse_scrolled(dt_iop_module_t *module,
   // add a preview when creating a circle
   if(gui->creation)
   {
-    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       const float masks_border = dt_masks_change_size
         (up,
@@ -160,7 +160,7 @@ static int _circle_events_mouse_scrolled(dt_iop_module_t *module,
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
@@ -169,7 +169,7 @@ static int _circle_events_mouse_scrolled(dt_iop_module_t *module,
     {
       dt_masks_point_circle_t *circle = form->points->data;
       // resize don't care where the mouse is inside a shape
-      if(dt_modifier_is(state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
       {
         circle->border = dt_masks_change_size
           (up,
@@ -262,7 +262,7 @@ static int _circle_events_button_pressed(dt_iop_module_t *module,
       }
     }
   }
-  else if(which == GDK_BUTTON_SECONDARY)
+  else if(which == DT_BUTTON_SECONDARY)
   {
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -271,9 +271,9 @@ static int _circle_events_button_pressed(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(which == GDK_BUTTON_PRIMARY
-          && ((dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-              || dt_modifier_is(state, GDK_SHIFT_MASK)))
+  else if(which == DT_BUTTON_PRIMARY
+          && ((dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT))
+              || dt_modifier_is(state, DT_MODIFIER_SHIFT)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE)
@@ -403,7 +403,7 @@ static int _circle_events_button_released(dt_iop_module_t *module,
                                           dt_masks_form_gui_t *gui,
                                           const int index)
 {
-  if(which == GDK_BUTTON_SECONDARY
+  if(which == DT_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -1374,10 +1374,10 @@ static GSList *_circle_setup_mouse_actions(const struct dt_masks_form_t *const f
   GSList *lm = NULL;
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0, _("[CIRCLE] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, DT_MODIFIER_SHIFT,
                                      _("[CIRCLE] change fade-out border"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_CONTROL_MASK, _("[CIRCLE] change opacity"));
+                                     DT_MODIFIER_CONTROL, _("[CIRCLE] change opacity"));
   return lm;
 }
 

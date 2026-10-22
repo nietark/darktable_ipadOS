@@ -644,7 +644,7 @@ int button_pressed(dt_iop_module_t *self,
 {
   dt_iop_graduatednd_gui_data_t *g = self->gui_data;
 
-  if(which == GDK_BUTTON_SECONDARY)
+  if(which == DT_BUTTON_SECONDARY)
   {
     // creating a line with right click
     g->dragging = 2;
@@ -656,7 +656,7 @@ int button_pressed(dt_iop_module_t *self,
     g->oldy = pzy;
     return 1;
   }
-  else if(g->selected > 0 && which == GDK_BUTTON_PRIMARY)
+  else if(g->selected > 0 && which == DT_BUTTON_PRIMARY)
   {
     g->dragging = g->selected;
     g->oldx = pzx;
@@ -714,7 +714,7 @@ int scrolled(
 {
   const dt_iop_graduatednd_gui_data_t *g = self->gui_data;
   const dt_iop_graduatednd_params_t *p = self->params;
-  if(dt_modifier_is(state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
   {
     float dens;
     if(up)
@@ -727,7 +727,7 @@ int scrolled(
     }
     return 1;
   }
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
+  if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
   {
     float comp;
     if(up)

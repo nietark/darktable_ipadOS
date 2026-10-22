@@ -121,7 +121,7 @@ static int _gradient_events_mouse_scrolled(dt_iop_module_t *module,
 {
   if(gui->creation)
   {
-    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       float compression =
         MIN(1.0f, dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression)));
@@ -156,12 +156,12 @@ static int _gradient_events_mouse_scrolled(dt_iop_module_t *module,
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     }
-    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    else if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       dt_masks_point_gradient_t *gradient = form->points->data;
       if(up)
@@ -205,7 +205,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
 {
   if(!gui) return 0;
 
-  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
+  if(which == DT_BUTTON_PRIMARY && type == DT_BUTTON_DOUBLE_PRESS)
   {
     // double-click resets curvature
     dt_masks_point_gradient_t *gradient = form->points->data;
@@ -218,7 +218,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     return 1;
   }
   else if(!gui->creation
-          && dt_modifier_is(state, GDK_SHIFT_MASK))
+          && dt_modifier_is(state, DT_MODIFIER_SHIFT))
   {
     dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
@@ -236,7 +236,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     // - dragging the pivot handle rotates (legacy gesture)
     // - CTRL+drag anywhere rotates too, matching the rotate convention
     //   used by the other masks (ellipse, path, brush)
-    if(gui->pivot_selected || dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(gui->pivot_selected || dt_modifier_is(state, DT_MODIFIER_CONTROL))
       gui->form_rotating = TRUE;
     else
       gui->form_dragging = TRUE;
@@ -244,7 +244,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
   }
-  else if(gui->creation && (which == GDK_BUTTON_SECONDARY))
+  else if(gui->creation && (which == DT_BUTTON_SECONDARY))
   {
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);
@@ -344,7 +344,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
   float wd, ht;
   dt_masks_get_image_size(&wd, &ht, NULL, NULL);
 
-  if(which == GDK_BUTTON_SECONDARY
+  if(which == DT_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -1386,15 +1386,15 @@ static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                      0, _("[GRADIENT on pivot] rotate shape"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_CONTROL_MASK, _("[GRADIENT] rotate shape"));
+                                     DT_MODIFIER_CONTROL, _("[GRADIENT] rotate shape"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                      0, _("[GRADIENT creation] set rotation"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0, _("[GRADIENT] change curvature"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_SHIFT_MASK, _("[GRADIENT] change compression"));
+                                     DT_MODIFIER_SHIFT, _("[GRADIENT] change compression"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_CONTROL_MASK, _("[GRADIENT] change opacity"));
+                                     DT_MODIFIER_CONTROL, _("[GRADIENT] change opacity"));
   return lm;
 }
 

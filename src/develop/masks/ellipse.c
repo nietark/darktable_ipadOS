@@ -443,7 +443,7 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
     float radius_a = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_a));
     float radius_b = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_b));
 
-    if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_SHIFT | DT_MODIFIER_CONTROL))
     {
       const float rotation =
         dt_masks_change_rotation
@@ -455,7 +455,7 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
 
       dt_toast_log(_("rotation: %3.f°"), rotation);
     }
-    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    else if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, border));
       const int flags = dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
@@ -495,7 +495,7 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
@@ -503,7 +503,7 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
     else
     {
       dt_masks_point_ellipse_t *ellipse = form->points->data;
-      if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK)
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT | DT_MODIFIER_CONTROL)
          && gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
         ellipse->rotation = dt_masks_change_rotation(up, ellipse->rotation, TRUE);
@@ -514,7 +514,7 @@ static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
         dt_toast_log(_("rotation: %3.f°"), ellipse->rotation);
       }
       // resize don't care where the mouse is inside a shape
-      if(dt_modifier_is(state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
       {
         const float reference =
           (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL
@@ -583,14 +583,14 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
 
-    if(gui->form_selected && dt_modifier_is(state, GDK_MOD1_MASK))
+    if(gui->form_selected && dt_modifier_is(state, DT_MODIFIER_ALT))
     {
       gui->border_toggling = TRUE;
       return 1;
     }
     else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
-      if(gui->source_selected && !dt_modifiers_include(state, GDK_CONTROL_MASK))
+      if(gui->source_selected && !dt_modifiers_include(state, DT_MODIFIER_CONTROL))
       {
         gui->dx = gpt->source[0] - gui->posx;
         gui->dy = gpt->source[1] - gui->posy;
@@ -602,13 +602,13 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
       gui->dx = gpt->points[0] - gui->posx;
       gui->dy = gpt->points[1] - gui->posy;
 
-      if((gui->form_selected || gui->source_selected) && dt_modifiers_include(state, GDK_CONTROL_MASK))
+      if((gui->form_selected || gui->source_selected) && dt_modifiers_include(state, DT_MODIFIER_CONTROL))
       {
         // Modifier scheme (matches the rotate combo used elsewhere for masks):
         // - CTRL: rotate only the shape under the pointer (source or target)
         // - CTRL+SHIFT: rotate both shapes together
         gui->rotate_about_source = FALSE;
-        if(dt_modifiers_include(state, GDK_SHIFT_MASK))
+        if(dt_modifiers_include(state, DT_MODIFIER_SHIFT))
         {
           gui->form_rotating = TRUE;
           gui->counter_rotate_source = FALSE; // joint rotation
@@ -653,7 +653,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
       }
     }
   }
-  else if(which == GDK_BUTTON_SECONDARY)
+  else if(which == DT_BUTTON_SECONDARY)
   {
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -662,9 +662,9 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(which == GDK_BUTTON_PRIMARY
-          && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
-              || dt_modifier_is(state, GDK_SHIFT_MASK)))
+  else if(which == DT_BUTTON_PRIMARY
+          && (dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT)
+              || dt_modifier_is(state, DT_MODIFIER_SHIFT)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE)
@@ -1998,24 +1998,24 @@ static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const 
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0,
                                      _("[ELLIPSE] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, DT_MODIFIER_SHIFT,
                                      _("[ELLIPSE] change fade-out border"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_SHIFT_MASK|GDK_CONTROL_MASK,
+                                     DT_MODIFIER_SHIFT|DT_MODIFIER_CONTROL,
                                      _("[ELLIPSE] rotate shape"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_CONTROL_MASK,
+                                     DT_MODIFIER_CONTROL,
                                      _("[ELLIPSE] change opacity"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT,
-                                     GDK_SHIFT_MASK,
+                                     DT_MODIFIER_SHIFT,
                                      _("[ELLIPSE] switch feathering mode"));
   lm = dt_mouse_action_create_simple(lm,
                                      DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_CONTROL_MASK,
+                                     DT_MODIFIER_CONTROL,
                                      _("[ELLIPSE] rotate shape (source only on a clone source)"));
   lm = dt_mouse_action_create_simple(lm,
                                      DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_SHIFT_MASK | GDK_CONTROL_MASK,
+                                     DT_MODIFIER_SHIFT | DT_MODIFIER_CONTROL,
                                      _("[ELLIPSE] rotate shape and source together"));
   return lm;
 }

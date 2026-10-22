@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/dtdata.h"
+#include "common/input.h"
 #include "common/opencl.h"
 #include "develop/pixelpipe.h"
 

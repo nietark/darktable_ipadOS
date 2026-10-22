@@ -1335,7 +1335,7 @@ static int _object_events_mouse_scrolled(dt_iop_module_t *module,
       dt_control_queue_redraw_center();
       return 1;
     }
-    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       // shift+scroll: adjust cleanup (potrace turdsize)
       const int cleanup =
@@ -1636,7 +1636,7 @@ static int _object_events_button_pressed(dt_iop_module_t *module,
   (void)pressure;
   (void)parentid;
   (void)index;
-  if(type == GDK_2BUTTON_PRESS || type == GDK_3BUTTON_PRESS)
+  if(type == DT_BUTTON_DOUBLE_PRESS || type == DT_BUTTON_TRIPLE_PRESS)
     return 1;
 
   _object_data_t *d = _get_data(gui);
@@ -1646,7 +1646,7 @@ static int _object_events_button_pressed(dt_iop_module_t *module,
   if(d && d->decoding)
     return 1;
 
-  if(which == 1 && dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+  if(which == 1 && dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT))
   {
     // ctrl+shift+click: clear selection (only after first selection)
     if(d && d->has_selection && d->encode_state == ENCODE_READY)
@@ -1773,7 +1773,7 @@ static int _object_events_button_released(dt_iop_module_t *module,
   prompt->prompt.pos[1] = pt[1] / iheight;
   // click: foreground point, shift+click: background point (only
   // after first selection)
-  prompt->prompt.label = (d->has_selection && dt_modifier_is(state, GDK_SHIFT_MASK))
+  prompt->prompt.label = (d->has_selection && dt_modifier_is(state, DT_MODIFIER_SHIFT))
     ? 0.0f : 1.0f;
   d->prompts = g_list_append(d->prompts, prompt);
   d->has_selection = TRUE;
@@ -2080,11 +2080,11 @@ static void _object_events_post_expose(cairo_t *cr,
   const gboolean has_sel = d && d->has_selection;
   const gboolean ctrl_shift_held
     = has_sel
-      && (mod & (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-           == (GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+      && (mod & (DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT))
+           == (DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT);
   const gboolean shift_held
     = has_sel && !ctrl_shift_held
-      && (mod & GDK_SHIFT_MASK) != 0;
+      && (mod & DT_MODIFIER_SHIFT) != 0;
 
   // convert device coordinates to preview pipe pixel space
   {
@@ -2165,12 +2165,12 @@ static GSList *_object_events_setup_mouse_actions
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_LEFT,
-    GDK_SHIFT_MASK,
+    DT_MODIFIER_SHIFT,
     _("[OBJECT] add background point"));
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_LEFT,
-    GDK_CONTROL_MASK | GDK_SHIFT_MASK,
+    DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT,
     _("[OBJECT] clear selection"));
   lm = dt_mouse_action_create_simple(
     lm,
@@ -2188,13 +2188,13 @@ static GSList *_object_events_setup_mouse_actions
     lm = dt_mouse_action_create_simple(
       lm,
       DT_MOUSE_ACTION_SCROLL,
-      GDK_SHIFT_MASK,
+      DT_MODIFIER_SHIFT,
       _("[OBJECT] change cleanup"));
   }
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_SCROLL,
-    GDK_CONTROL_MASK,
+    DT_MODIFIER_CONTROL,
     _("[OBJECT] change opacity"));
   return lm;
 }
@@ -2533,7 +2533,7 @@ static int _object_button_pressed(dt_iop_module_t *module,
   if(gui && gui->creation)
     return _object_events_button_pressed(module, pzx, pzy, pressure, which, type, state,
                                          form, parentid, gui, index);
-  if(gui && which == 1 && type == GDK_BUTTON_PRESS && gui->form_selected
+  if(gui && which == 1 && type == DT_BUTTON_PRESS && gui->form_selected
      && gui->point_selected == 0 && dt_masks_pixel_ref(form))
     return _start_edit(module, form);
 #endif

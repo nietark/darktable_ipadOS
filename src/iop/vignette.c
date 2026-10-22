@@ -538,14 +538,14 @@ int mouse_moved(dt_iop_module_t *self,
   }
 
   if(grab == 0
-     || !(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY))
+     || !(darktable.control->button_down && darktable.control->button_down_which == DT_BUTTON_PRIMARY))
   {
     grab = _get_grab(pzx * wd - vignette_x, pzy * ht - vignette_y,
                      vignette_w, -vignette_h, vignette_fx,
                     -vignette_fy, zoom_scale);
   }
 
-  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
+  if(darktable.control->button_down && darktable.control->button_down_which == DT_BUTTON_PRIMARY)
   {
     if(grab == 0) // pan the image
     {
@@ -570,7 +570,7 @@ int mouse_moved(dt_iop_module_t *self,
       // speed.  I guess we have to split the computation.
       if(ratio <= 1.0)
       {
-        if(dt_modifier_is(which, GDK_CONTROL_MASK))
+        if(dt_modifier_is(which, DT_MODIFIER_CONTROL))
         {
           dt_bauhaus_slider_set(g->scale, new_scale);
         }
@@ -583,7 +583,7 @@ int mouse_moved(dt_iop_module_t *self,
       {
         dt_bauhaus_slider_set(g->scale, new_scale);
 
-        if(!dt_modifier_is(which, GDK_CONTROL_MASK))
+        if(!dt_modifier_is(which, DT_MODIFIER_CONTROL))
         {
           float new_whratio = 2.0 - 1.0 / ratio;
           dt_bauhaus_slider_set(g->whratio, new_whratio);
@@ -601,7 +601,7 @@ int mouse_moved(dt_iop_module_t *self,
       // speed.  I guess we have to split the computation.
       if(ratio <= 1.0)
       {
-        if(dt_modifier_is(which, GDK_CONTROL_MASK))
+        if(dt_modifier_is(which, DT_MODIFIER_CONTROL))
         {
           const float new_scale = 100.0 * new_vignette_h / max;
           dt_bauhaus_slider_set(g->scale, new_scale);
@@ -616,7 +616,7 @@ int mouse_moved(dt_iop_module_t *self,
         const float new_scale = 100.0 * new_vignette_h / max;
         dt_bauhaus_slider_set(g->scale, new_scale);
 
-        if(!dt_modifier_is(which, GDK_CONTROL_MASK))
+        if(!dt_modifier_is(which, DT_MODIFIER_CONTROL))
         {
           const float new_whratio = 1.0 / ratio;
           dt_bauhaus_slider_set(g->whratio, new_whratio);
@@ -675,7 +675,7 @@ int button_pressed(dt_iop_module_t *self,
                    const uint32_t state,
                    const float zoom_scale)
 {
-  if(which == GDK_BUTTON_PRIMARY) return 1;
+  if(which == DT_BUTTON_PRIMARY) return 1;
   return 0;
 }
 
@@ -686,7 +686,7 @@ int button_released(dt_iop_module_t *self,
                     const uint32_t state,
                     const float zoom_scale)
 {
-  if(which == GDK_BUTTON_PRIMARY) return 1;
+  if(which == DT_BUTTON_PRIMARY) return 1;
   return 0;
 }
 

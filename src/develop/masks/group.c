@@ -84,7 +84,7 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
                               dt_dev_get_zoom_scale_full(), form, 0, gui, 0);
 
   // a plain click on empty canvas selects nothing, group included
-  if(gui->group_selected < 0 && which == GDK_BUTTON_PRIMARY && type == GDK_BUTTON_PRESS)
+  if(gui->group_selected < 0 && which == DT_BUTTON_PRIMARY && type == DT_BUTTON_PRESS)
     dt_iop_gui_blend_masks_clear_selection(module);
 
   if(gui->group_edited != gui->group_selected)
@@ -122,10 +122,10 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
     if(sel->functions)
     {
       // did we asked for feather only?
-      if(dt_modifier_is(state, GDK_SHIFT_MASK) ^ gui->select_only_border)
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT) ^ gui->select_only_border)
       {
         // then make sure we try to select the feather point
-        gui->select_only_border = dt_modifier_is(state, GDK_SHIFT_MASK);
+        gui->select_only_border = dt_modifier_is(state, DT_MODIFIER_SHIFT);
         // no dt_dev_get_zoom_scale_full(): global_mutex under history_mutex can deadlock
         dt_dev_viewport_t *port = &darktable.develop->full;
         const float zoom_scale =
@@ -274,7 +274,7 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   gui->group_edited = gui->group_selected = -1;
-  gui->select_only_border = dt_modifier_is(which, GDK_SHIFT_MASK);
+  gui->select_only_border = dt_modifier_is(which, DT_MODIFIER_SHIFT);
 
   dt_masks_form_t *sel = NULL;
   dt_masks_point_group_t *sel_fpt = NULL;

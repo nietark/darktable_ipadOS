@@ -1375,7 +1375,7 @@ static int _brush_events_mouse_scrolled(dt_iop_module_t *module,
 {
   if(gui->creation)
   {
-    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       const float masks_hardness = dt_masks_change_size
         (up,
@@ -1420,7 +1420,7 @@ static int _brush_events_mouse_scrolled(dt_iop_module_t *module,
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
@@ -1428,7 +1428,7 @@ static int _brush_events_mouse_scrolled(dt_iop_module_t *module,
     else
     {
       // resize don't care where the mouse is inside a shape
-      if(dt_modifier_is(state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
       {
         int pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
@@ -1528,7 +1528,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
-  if(type == GDK_2BUTTON_PRESS || type == GDK_3BUTTON_PRESS) return 1;
+  if(type == DT_BUTTON_DOUBLE_PRESS || type == DT_BUTTON_TRIPLE_PRESS) return 1;
   if(!gui) return 0;
 
   dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
@@ -1550,9 +1550,9 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
   const float masks_density = 1.0f;
 
   if(gui->creation
-     && which == GDK_BUTTON_PRIMARY
-     && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
-         || dt_modifier_is(state, GDK_SHIFT_MASK)))
+     && which == DT_BUTTON_PRIMARY
+     && (dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT)
+         || dt_modifier_is(state, DT_MODIFIER_SHIFT)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE)
@@ -1560,7 +1560,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
 
     return 1;
   }
-  else if(which == GDK_BUTTON_PRIMARY)
+  else if(which == DT_BUTTON_PRIMARY)
   {
     if(gui->creation)
     {
@@ -1610,13 +1610,13 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     }
     else if((gui->form_selected || gui->source_selected || (gui->seg_selected >= 0 && gui->point_selected < 0 &&
                                     gui->feather_selected < 0 && gui->point_border_selected < 0)) &&
-            gui->edit_mode == DT_MASKS_EDIT_FULL && dt_modifiers_include(state, GDK_CONTROL_MASK))
+            gui->edit_mode == DT_MASKS_EDIT_FULL && dt_modifiers_include(state, DT_MODIFIER_CONTROL))
     {
       // Modifier scheme (matches the rotate combo used elsewhere for masks):
       // - CTRL: rotate only the shape under the pointer (source or target)
       // - CTRL+SHIFT: rotate both shapes together about their centroids
       gui->rotate_about_source = FALSE;
-      if(dt_modifiers_include(state, GDK_SHIFT_MASK))
+      if(dt_modifiers_include(state, DT_MODIFIER_SHIFT))
       {
         gui->form_rotating = TRUE;
         gui->counter_rotate_source = FALSE; // joint rotation
@@ -1677,7 +1677,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     {
       // if ctrl is pressed, we change the type of point
       if(gui->point_edited == gui->point_selected
-         && dt_modifier_is(state, GDK_CONTROL_MASK))
+         && dt_modifier_is(state, DT_MODIFIER_CONTROL))
       {
         dt_masks_point_brush_t *point
             = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->point_edited);
@@ -1730,7 +1730,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
       // add a node with SHIFT+click on a segment. This used to be CTRL+click,
       // but CTRL is now reserved for the rotate gesture (see the rotate branch
       // above), so the add-node modifier was moved to SHIFT to avoid a clash.
-      if(dt_modifier_is(state, GDK_SHIFT_MASK) && gui->seg_selected < nb - 1)
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT) && gui->seg_selected < nb - 1)
       {
         // we add a new point to the brush
         dt_masks_point_brush_t *bzpt = (malloc(sizeof(dt_masks_point_brush_t)));
@@ -1777,7 +1777,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     }
     gui->point_edited = -1;
   }
-  else if(gui->creation && which == GDK_BUTTON_SECONDARY)
+  else if(gui->creation && which == DT_BUTTON_SECONDARY)
   {
     dt_masks_dynbuf_free(gui->guipoints);
     dt_masks_dynbuf_free(gui->guipoints_payload);
@@ -1793,7 +1793,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(gui->point_selected >= 0 && which == GDK_BUTTON_SECONDARY)
+  else if(gui->point_selected >= 0 && which == DT_BUTTON_SECONDARY)
   {
     // we remove the point (and the entire form if there is too few points)
     if(g_list_shorter_than(form->points, 3))
@@ -1846,7 +1846,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
 
     return 1;
   }
-  else if(gui->feather_selected >= 0 && which == GDK_BUTTON_SECONDARY)
+  else if(gui->feather_selected >= 0 && which == DT_BUTTON_SECONDARY)
   {
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->feather_selected);
@@ -1862,7 +1862,7 @@ static int _brush_events_button_pressed(dt_iop_module_t *module,
     }
     return 1;
   }
-  else if(which == GDK_BUTTON_SECONDARY && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if(which == DT_BUTTON_SECONDARY && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
@@ -1920,14 +1920,14 @@ static int _brush_events_button_released(dt_iop_module_t *module,
         BORDER_MAX);
 
   if(gui->creation
-     && which == GDK_BUTTON_PRIMARY
-     && (dt_modifier_is(state, GDK_SHIFT_MASK)
-         || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+     && which == DT_BUTTON_PRIMARY
+     && (dt_modifier_is(state, DT_MODIFIER_SHIFT)
+         || dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT)))
   {
     // user just set the source position, so just return
     return 1;
   }
-  else if(gui->creation && which == GDK_BUTTON_PRIMARY)
+  else if(gui->creation && which == DT_BUTTON_PRIMARY)
   {
     if(gui->guipoints && gui->guipoints_count > 0)
     {
@@ -3356,21 +3356,21 @@ static GSList *_brush_setup_mouse_actions(const struct dt_masks_form_t *const fo
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_simple(
-    lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, _("[BRUSH on segment] add node"));
+    lm, DT_MOUSE_ACTION_LEFT, DT_MODIFIER_SHIFT, _("[BRUSH on segment] add node"));
   lm = dt_mouse_action_create_simple(lm,
                                      DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_CONTROL_MASK,
+                                     DT_MODIFIER_CONTROL,
                                      _("[BRUSH] rotate shape (source only on a clone source)"));
   lm = dt_mouse_action_create_simple(lm,
                                      DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_SHIFT_MASK | GDK_CONTROL_MASK,
+                                     DT_MODIFIER_SHIFT | DT_MODIFIER_CONTROL,
                                      _("[BRUSH] rotate shape and source together"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0, _("[BRUSH] change size"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_SHIFT_MASK, _("[BRUSH] change hardness"));
+                                     DT_MODIFIER_SHIFT, _("[BRUSH] change hardness"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_CONTROL_MASK, _("[BRUSH] change opacity"));
+                                     DT_MODIFIER_CONTROL, _("[BRUSH] change opacity"));
   return lm;
 }
 

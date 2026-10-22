@@ -2901,9 +2901,9 @@ int scrolled(dt_iop_module_t *self,
   const float increment = (up) ? +1.0f : -1.0f;
 
   float step;
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
+  if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     step = 1.0f;  // coarse
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
+  else if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
     step = 0.1f;  // fine
   else
     step = 0.25f; // standard

@@ -2902,7 +2902,7 @@ gboolean dt_masks_events_button_pressed(dt_iop_module_t *module,
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
 
   // allow to select a shape inside an iop
-  if(gui && which == GDK_BUTTON_PRIMARY)
+  if(gui && which == DT_BUTTON_PRIMARY)
   {
     const dt_masks_form_t *sel = NULL;
 
@@ -2988,7 +2988,7 @@ gboolean dt_masks_events_mouse_scrolled(dt_iop_module_t *module,
   if(gui)
   {
     // Do not update brush opacity here; it is mask density.
-    if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(gui->creation && dt_modifier_is(state, DT_MODIFIER_CONTROL))
     {
       const float amount = incr ? 0.05f : -0.05f;
       // a tool reopened on a grouped shape (the AI object's edit) changes
@@ -4365,9 +4365,9 @@ void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui,
                                            const float pzx,
                                            const float pzy)
 {
-  if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+  if(dt_modifier_is(state, DT_MODIFIER_SHIFT | DT_MODIFIER_CONTROL))
     gui->source_pos_type = DT_MASKS_SOURCE_POS_ABSOLUTE;
-  else if(dt_modifier_is(state, GDK_SHIFT_MASK))
+  else if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
   else
     dt_print(DT_DEBUG_ALWAYS,

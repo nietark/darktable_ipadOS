@@ -27,6 +27,7 @@
 #include "common/introspection.h"
 #include "common/opencl.h"
 #include "common/action.h"
+#include "common/input.h"
 #include "control/settings.h"
 
 #if defined(__aarch64__)

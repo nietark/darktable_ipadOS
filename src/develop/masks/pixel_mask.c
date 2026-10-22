@@ -801,7 +801,7 @@ int dt_masks_pixel_mouse_scrolled(dt_iop_module_t *module,
                                   dt_masks_form_gui_t *gui,
                                   const int index)
 {
-  if(gui && gui->form_selected && dt_modifier_is(state, GDK_CONTROL_MASK))
+  if(gui && gui->form_selected && dt_modifier_is(state, DT_MODIFIER_CONTROL))
   {
     dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     return 1;
@@ -817,7 +817,7 @@ int dt_masks_pixel_button_released(dt_iop_module_t *module,
                                    const dt_mask_id_t parentid,
                                    dt_masks_form_gui_t *gui)
 {
-  if(!(gui && which == GDK_BUTTON_SECONDARY && gui->form_selected
+  if(!(gui && which == DT_BUTTON_SECONDARY && gui->form_selected
        && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL))
     return 0;
 
@@ -1082,7 +1082,7 @@ GSList *dt_masks_pixel_setup_mouse_actions(const dt_masks_pixel_type_t *type)
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_SCROLL,
-    GDK_CONTROL_MASK,
+    DT_MODIFIER_CONTROL,
     _(type->opacity_action));
   return lm;
 }
