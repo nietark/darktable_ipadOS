@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/interpolation.h"
@@ -30,14 +29,11 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
-#include "develop/imageop_gui.h"
 #include "develop/masks.h"
 #include "develop/blend.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "develop/tiling.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "iop/iop_api.h"
 
 #include <complex.h>
@@ -46,6 +42,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/imageop_gui.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#endif
 
 DT_MODULE_INTROSPECTION(7, dt_iop_demosaic_params_t)
 
@@ -188,7 +191,9 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *cs_iter;
   GtkWidget *cs_center;
   GtkWidget *cs_enabled;
+#ifndef DT_NO_GUI
   dt_gui_collapsible_section_t capture;
+#endif
   gboolean cs_mask;
   gboolean dual_mask;
   gboolean cs_boost_mask;
@@ -1600,8 +1605,10 @@ void reload_defaults(dt_iop_module_t *self)
   self->hide_enable_button = TRUE;
 
   self->default_enabled = dt_image_is_raw(img) || dt_image_is_mono_sraw(img);
+#ifndef DT_NO_GUI
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
+#endif
 
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(g)
@@ -1614,6 +1621,7 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
+#ifndef DT_NO_GUI
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
@@ -1981,6 +1989,7 @@ void gui_init(dt_iop_module_t *self)
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PRESET_APPLIED, _preset_applied_callback);
 }
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

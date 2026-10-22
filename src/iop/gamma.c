@@ -24,8 +24,6 @@
 #include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_gamma_params_t)

@@ -17,23 +17,27 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "common/imagebuf.h"
 #include "common/image_cache.h"
 #include "common/dng_opcode.h"
 #include "develop/imageop.h"
-#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "gui/presets.h"
 #include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "iop/iop_api.h"
 
-#include <gtk/gtk.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/imageop_gui.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+
+#include <gtk/gtk.h>
+#endif
 
 DT_MODULE_INTROSPECTION(2, dt_iop_rawprepare_params_t)
 
@@ -803,8 +807,10 @@ void reload_defaults(dt_iop_module_t *self)
   self->hide_enable_button = TRUE;
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !_image_is_normalized(image);
 
+#ifndef DT_NO_GUI
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
+#endif
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -832,6 +838,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
+#ifndef DT_NO_GUI
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_rawprepare_gui_data_t *g = self->gui_data;
@@ -968,6 +975,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 }
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

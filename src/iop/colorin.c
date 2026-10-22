@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/colormatrices.c"
@@ -28,8 +27,6 @@
 #include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
-#include "gui/gtk.h"
-#include "gui/accelerators.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_png.h"
 #ifdef HAVE_LIBJXL
@@ -46,7 +43,6 @@
 #endif
 
 #include "develop/imageop_math.h"
-#include "develop/imageop_gui.h"
 #include "iop/iop_api.h"
 
 #include <assert.h>
@@ -57,6 +53,13 @@
 
 #include <lcms2.h>
 
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "gui/gtk.h"
+#include "gui/accelerators.h"
+#include "develop/imageop_gui.h"
+#endif
+
 // max iccprofile file name length
 // must be in synch with dt_colorspaces_color_profile_t
 #define DT_IOP_COLOR_ICC_LEN 512
@@ -65,7 +68,9 @@
 
 DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)
 
+#ifndef DT_NO_GUI
 static void update_profile_list(dt_iop_module_t *self);
+#endif
 
 typedef enum dt_iop_color_normalize_t
 {
@@ -645,6 +650,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
+#ifndef DT_NO_GUI
 static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
@@ -745,6 +751,7 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
              dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
 }
+#endif // DT_NO_GUI
 
 static float lerp_lut(const float *const lut, const float v)
 {
@@ -1831,6 +1838,7 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
+#ifndef DT_NO_GUI
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = self->gui_data;
@@ -1901,6 +1909,7 @@ void gui_update(dt_iop_module_t *self)
   dt_print(DT_DEBUG_PIPE, "[gui colorin] using default instead of `%s'",
              dt_colorspaces_get_name(p->type, p->filename));
 }
+#endif // DT_NO_GUI
 
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *self)
@@ -2023,6 +2032,7 @@ void reload_defaults(dt_iop_module_t *self)
   }
 #endif
 
+#ifndef DT_NO_GUI
   // We'll update the input profile hint with information on the
   // embedded ICC profile if it exists.  Since the tooltip info is now
   // image dependent, we need to set the tooltip for each image
@@ -2125,6 +2135,7 @@ corrupted_profile:
       g_free(tooltip_part_profile_dirs);
     }
   }
+#endif
 
   if(color_profile != DT_COLORSPACE_NONE)
     d->type = color_profile;
@@ -2152,9 +2163,12 @@ corrupted_profile:
 
   dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 
+#ifndef DT_NO_GUI
   update_profile_list(self);
+#endif
 }
 
+#ifndef DT_NO_GUI
 static void update_profile_list(dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = self->gui_data;
@@ -2358,6 +2372,7 @@ void gui_cleanup(dt_iop_module_t *self)
     g->image_profiles = g_list_delete_link(g->image_profiles, g->image_profiles);
   }
 }
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

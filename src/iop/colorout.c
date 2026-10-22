@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/hdr-transfer.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -30,14 +29,19 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
-#include "gui/accelerators.h"
-#include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <gdk/gdkkeysyms.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+
+#include <gdk/gdkkeysyms.h>
+#endif
 
 // max iccprofile file name length
 // must be in synch with dt_colorspaces_color_profile_t
@@ -245,6 +249,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
+#ifndef DT_NO_GUI
 static void _intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
@@ -284,6 +289,7 @@ static void _signal_profile_changed(gpointer instance, dt_iop_module_t *self)
   if(!dev->gui_attached || dev->gui_leaving) return;
   dt_dev_reprocess_all(dev);
 }
+#endif // DT_NO_GUI
 
 static float _lerp_u_lut(const float *const lut, const float v)
 {
@@ -809,6 +815,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
+#ifndef DT_NO_GUI
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorout_gui_data_t *g = self->gui_data;
@@ -835,6 +842,7 @@ void gui_update(dt_iop_module_t *self)
            "[colorout] could not find requested profile `%s'!",
            dt_colorspaces_get_name(p->type, p->filename));
 }
+#endif // DT_NO_GUI
 
 void init(dt_iop_module_t *self)
 {
@@ -844,6 +852,7 @@ void init(dt_iop_module_t *self)
   self->default_enabled = TRUE;
 }
 
+#ifndef DT_NO_GUI
 static void _preference_changed(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_colorout_gui_data_t *g = self->gui_data;
@@ -903,6 +912,7 @@ void gui_init(dt_iop_module_t *self)
   // update the gui when the preferences changed (i.e. show intent when using lcms2)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed);
 }
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

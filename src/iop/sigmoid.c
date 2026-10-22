@@ -16,20 +16,24 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/custom_primaries.h"
 #include "common/math.h"
 #include "common/matrices.h"
 #include "common/dttypes.h"
 #include "develop/imageop.h"
-#include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
-#include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <gtk/gtk.h>
 #include <stdlib.h>
+
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/imageop_gui.h"
+#include "gui/gtk.h"
+
+#include <gtk/gtk.h>
+#endif
 
 DT_MODULE_INTROSPECTION(4, dt_iop_sigmoid_params_t)
 
@@ -192,6 +196,7 @@ typedef struct dt_iop_sigmoid_data_t
   float contrast_skewness;
 } dt_iop_sigmoid_data_t;
 
+#ifndef DT_NO_GUI
 typedef struct dt_iop_sigmoid_gui_data_t
 {
   GtkWidget *color_processing_list, *hue_preservation_slider;
@@ -199,6 +204,7 @@ typedef struct dt_iop_sigmoid_gui_data_t
 
   dt_gui_collapsible_section_t display_luminance_section, primaries_section;
 } dt_iop_sigmoid_gui_data_t;
+#endif
 
 typedef struct dt_iop_sigmoid_global_data_t
 {
@@ -909,6 +915,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
   piece->data = calloc(1, sizeof(dt_iop_sigmoid_data_t));
 }
 
+#ifndef DT_NO_GUI
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   const dt_iop_sigmoid_gui_data_t *g = self->gui_data;
@@ -1031,6 +1038,7 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = main_box;
 }
+#endif // DT_NO_GUI
 
 
 // clang-format off
