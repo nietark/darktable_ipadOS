@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2026 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,8 +28,9 @@
 #undef interface
 #endif
 #endif //defined (_WIN32)
-#include <gphoto2/gphoto2.h>
-#include <gtk/gtk.h>
+#include "common/camera_backend.h"
+
+#include <gio/gio.h>
 
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t
@@ -38,14 +39,8 @@ typedef struct dt_camera_t
   char *model;
   /** A pointer to the port string of camera. */
   char *port;
-  /** Camera summary text */
-  CameraText summary;
-
-  /** Camera configuration cache */
-  CameraWidget *configuration;
-
-  /** Registered timeout func */
-  CameraTimeoutFunc timeout;
+  /** Camera summary text, may be NULL */
+  char *summary;
 
   dt_pthread_mutex_t config_lock;
   /** This camera/device can import images. */
@@ -67,25 +62,20 @@ typedef struct dt_camera_t
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;
 
-  /** List of open gp_files to be closed when closing the camera */
-  GList *open_gpfiles;
-
   /** A mutex lock for jobqueue */
   dt_pthread_mutex_t jobqueue_lock;
   /** The jobqueue */
   GList *jobqueue;
 
+  /** State of dt_camctl_camera_property_get_first/next_choice() */
   struct
   {
-    CameraWidget *widget;
-    uint32_t index;
+    char *name;
+    int index;
   } current_choice;
 
-  /** gphoto2 camera pointer */
-  Camera *gpcam;
-
-  /** gphoto2 context */
-  GPContext *gpcontext;
+  /** Device state owned by the backend, NULL while not open */
+  void *backend_data;
 
   /** flag to unmount */
   gboolean unmount;
@@ -177,12 +167,10 @@ typedef struct dt_camctl_t
   /** List of unused cameras found */
   GList *unused_cameras;
 
-  /** The actual gphoto2 context */
-  GPContext *gpcontext;
-  /** List of gphoto2 port drivers */
-  GPPortInfoList *gpports;
-  /** List of gphoto2 camera drivers */
-  CameraAbilitiesList *gpcams;
+  /** The device layer, see camera_backend.h */
+  const dt_camera_backend_t *backend;
+  /** State owned by the backend */
+  void *backend_data;
 
   /** The host application want to use this camera. \see dt_camctl_select_camera() */
   const dt_camera_t *wanted_camera;
@@ -230,7 +218,7 @@ typedef struct dt_camctl_listener_t
    * stopped.. */
   int (*camera_storage_image_filename)(const dt_camera_t *camera,
                                        const char *filename,
-                                       CameraFile *preview,
+                                       GBytes *preview,
                                        void *data);
 
   /** Invoked when a value of a property is changed. */
@@ -297,8 +285,9 @@ time_t dt_camctl_get_image_file_timestamp(const dt_camctl_t *c, const char *in_p
                                           const char *in_filename);
 /** return the list of images from camera */
 GList *dt_camctl_get_images_list(const dt_camctl_t *c, dt_camera_t *cam);
-/** return the thumbnail of a camera image */
-GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c, dt_camera_t *cam, const gchar *filename);
+/** return the embedded preview of a camera image, or the image itself when
+    it is small, NULL on failure */
+GBytes *dt_camctl_get_preview(const dt_camctl_t *c, dt_camera_t *cam, const gchar *filename);
 /** Execute remote capture of camera.*/
 void dt_camctl_camera_capture(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Start live view of camera.*/
@@ -346,7 +335,7 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c,
 int dt_camctl_camera_get_property_type(const dt_camctl_t *c,
                                        const dt_camera_t *cam,
                                        const char *property_name,
-                                       CameraWidgetType *widget_type);
+                                       dt_camera_property_type_t *widget_type);
 
 /** Get first choice available for named property. */
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,

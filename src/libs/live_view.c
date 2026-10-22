@@ -192,7 +192,7 @@ static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
 static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const char *property = "autofocusdrive";
-  CameraWidgetType property_type;
+  dt_camera_property_type_t property_type;
   if(dt_camctl_camera_get_property_type(darktable.camctl, NULL,
                                         property, &property_type))
   {
@@ -201,7 +201,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
   }
   else
   {
-    if(property_type == GP_WIDGET_TOGGLE)
+    if(property_type == DT_CAMERA_PROPERTY_TOGGLE)
     {
       dt_camctl_camera_set_property_toggle(darktable.camctl, NULL, property);
     }
@@ -218,7 +218,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
 static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   int focus = GPOINTER_TO_INT(user_data);
-  CameraWidgetType property_type;
+  dt_camera_property_type_t property_type;
   if(dt_camctl_camera_get_property_type(darktable.camctl, NULL,
                                         "manualfocusdrive", &property_type))
   {
@@ -236,7 +236,7 @@ static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
     // RANGE.
     switch(property_type)
     {
-      case GP_WIDGET_RANGE:
+      case DT_CAMERA_PROPERTY_RANGE:
       {
         float focus_amount;
         switch(focus)
@@ -260,7 +260,7 @@ static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
                                             "manualfocusdrive", focus_amount);
         break;
       }
-      case GP_WIDGET_TOGGLE | GP_WIDGET_RADIO:
+      case DT_CAMERA_PROPERTY_TOGGLE | DT_CAMERA_PROPERTY_RADIO:
         dt_camctl_camera_set_property_choice(darktable.camctl, NULL,
                                              "manualfocusdrive", focus);
         break;
