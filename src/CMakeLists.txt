@@ -1252,6 +1252,10 @@ add_subdirectory(iop ${DARKTABLE_LIBDIR}/plugins)
 # Compile export modules
 add_subdirectory(imageio ${DARKTABLE_LIBDIR}/plugins/imageio)
 
+if(HAVE_OPENCL AND (USE_METAL OR BUILD_METAL_EMULATOR))
+  add_subdirectory(common/metal)
+endif()
+
 if(HAVE_OPENCL)
   # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
   add_subdirectory(cltest)
