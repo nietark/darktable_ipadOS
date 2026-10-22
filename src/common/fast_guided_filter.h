@@ -27,6 +27,7 @@
 #include "common/box_filters.h"
 #include "common/darktable.h"
 #include "common/imagebuf.h"
+#include "control/control.h"
 
 
 /* NOTE: this code complies with the optimizations in "common/extra_optimizations.h".

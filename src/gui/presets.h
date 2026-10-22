@@ -20,7 +20,13 @@
 
 #include "develop/blend.h"
 
+#include <glib-object.h>
 #include <sqlite3.h>
+
+struct _GtkCheckButton;
+struct _GtkEntry;
+struct _GtkWidget;
+struct _GtkWindow;
 
 // format flags stored into the presets database; the FOR_NOT_
 // variants are negated to keep existing presets
@@ -47,25 +53,25 @@ enum // Lib and iop presets
 };
 typedef struct dt_gui_presets_edit_dialog_t
 {
-  GtkWindow *parent;
+  struct _GtkWindow *parent;
 
   dt_iop_module_t *iop;
   gchar *module_name;
   gchar *operation;
   int op_version;
 
-  GtkEntry *name, *description;
-  GtkCheckButton *autoinit, *autoapply, *filter;
-  GtkWidget *details;
-  GtkWidget *model, *maker, *lens;
-  GtkWidget *iso_min, *iso_max;
-  GtkWidget *exposure_min, *exposure_max;
-  GtkWidget *aperture_min, *aperture_max;
-  GtkWidget *focal_length_min, *focal_length_max;
-  GtkWidget *dialog, *and_label;
+  struct _GtkEntry *name, *description;
+  struct _GtkCheckButton *autoinit, *autoapply, *filter;
+  struct _GtkWidget *details;
+  struct _GtkWidget *model, *maker, *lens;
+  struct _GtkWidget *iso_min, *iso_max;
+  struct _GtkWidget *exposure_min, *exposure_max;
+  struct _GtkWidget *aperture_min, *aperture_max;
+  struct _GtkWidget *focal_length_min, *focal_length_max;
+  struct _GtkWidget *dialog, *and_label;
   gchar *original_name;
   gint old_id;
-  GtkWidget *format_btn[5];
+  struct _GtkWidget *format_btn[5];
 
   GCallback callback;
   gpointer data;
@@ -141,7 +147,7 @@ void dt_gui_presets_update_filter(const char *name,
                                   const int filter);
 
 /** show the popup menu for the given module, with default behavior. */
-void dt_gui_presets_popup_menu_show_for_module(GtkWidget *button, dt_iop_module_t *module);
+void dt_gui_presets_popup_menu_show_for_module(struct _GtkWidget *button, dt_iop_module_t *module);
 
 /** ops for building a preset popup menu (dt_gui_presets_popup_menu_show()).
  *  The SELECT returned by query() must start with the columns
@@ -171,11 +177,11 @@ typedef struct dt_gui_presets_menu_ops_t
  *  modulegroups presets menus are the same menu).  The caller owns popping
  *  the menu up and any per-menu destroy cleanup; the menu is not popped and
  *  not destroyed here. */
-GtkWidget *dt_gui_presets_popup_menu_show(GtkWidget *button,
+struct _GtkWidget *dt_gui_presets_popup_menu_show(struct _GtkWidget *button,
                                           const dt_gui_presets_menu_ops_t *ops);
 
 /** show popupmenu for favorite modules */
-void dt_gui_favorite_presets_menu_show(GtkWidget *w);
+void dt_gui_favorite_presets_menu_show(struct _GtkWidget *w);
 
 /** apply a preset to the current module **/
 void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
@@ -210,7 +216,7 @@ void dt_gui_presets_apply_blend_params(dt_iop_module_t *module,
 void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, const int direction);
 
 /** apply any auto presets that are appropriate for the current module **/
-gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget *widget);
+gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, struct _GtkWidget *widget);
 
 void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
                                          dt_iop_module_t *module,
@@ -219,7 +225,7 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
                                          const gboolean allow_name_change,
                                          const gboolean allow_desc_change,
                                          const gboolean allow_remove,
-                                         GtkWindow *parent);
+                                         struct _GtkWindow *parent);
 void dt_gui_presets_show_edit_dialog(const char *name_in,
                                      const int rowid,
                                      GCallback final_callback,
@@ -227,7 +233,7 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
                                      const gboolean allow_name_change,
                                      const gboolean allow_desc_change,
                                      const gboolean allow_remove,
-                                     GtkWindow *parent);
+                                     struct _GtkWindow *parent);
 
 gboolean dt_gui_presets_confirm_and_delete(const char *name,
                                            const char *module_name,
