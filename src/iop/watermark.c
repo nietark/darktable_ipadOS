@@ -23,6 +23,7 @@
 #include "common/variables.h"
 #include "common/datetime.h"
 #include "common/utility.h"
+#include "common/utility_svg.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

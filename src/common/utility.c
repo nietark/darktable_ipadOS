@@ -22,6 +22,7 @@
 #include "common/file_location.h"
 #include "common/grealpath.h"
 #include "common/utility.h"
+#include "common/utility_svg.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
 

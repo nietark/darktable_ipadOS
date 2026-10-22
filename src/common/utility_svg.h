@@ -1,0 +1,47 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2026 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+#pragma once
+
+// kept out of common/utility.h so that its many users do not need the
+// librsvg and gdk-pixbuf headers
+
+#include <cairo.h>
+#include <librsvg/rsvg.h>
+
+G_BEGIN_DECLS
+
+// returns the RsvgDimensionData of a supplied RsvgHandle
+RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg);
+
+// renders svg data
+void dt_render_svg(RsvgHandle *svg, cairo_t *cr,
+                   const double width,
+                   const double height,
+                   const double offset_x,
+                   const double offset_y);
+
+G_END_DECLS
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+
