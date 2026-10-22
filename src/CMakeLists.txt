@@ -361,7 +361,7 @@ if(USE_CAMERA_SUPPORT)
   if(Gphoto2_FOUND)
     include_directories(SYSTEM ${Gphoto2_INCLUDE_DIRS})
     list(APPEND LIBS ${Gphoto2_LIBRARIES})
-    set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" )
+    set(SOURCES ${SOURCES} "common/camera_control.c" "common/camera_backend_gphoto2.c" "control/jobs/camera_jobs.c" )
     add_definitions("-DHAVE_GPHOTO2")
     # CPack ignores variables you define in your CMakeLists.txt file,
     # and only variables ${CPACK_*} are correctly used.

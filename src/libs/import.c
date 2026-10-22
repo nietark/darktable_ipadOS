@@ -279,9 +279,9 @@ void gui_update(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
 
       /* set camera summary if available */
-      if(*camera->summary.text)
+      if(camera->summary && *camera->summary)
       {
-        gtk_widget_set_tooltip_text(label, camera->summary.text);
+        gtk_widget_set_tooltip_text(label, camera->summary);
       }
       else
       {
@@ -420,6 +420,31 @@ static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
 }
 #endif
 
+#ifdef HAVE_GPHOTO2
+static GdkPixbuf *_camera_get_thumbnail(dt_camera_t *cam, const gchar *filename)
+{
+  GdkPixbuf *thumb = NULL;
+  GBytes *preview = dt_camctl_get_preview(darktable.camctl, cam, filename);
+  if(!preview) return NULL;
+
+  // we got preview image data lets create a pixbuf from image blob
+  GInputStream *stream = g_memory_input_stream_new_from_bytes(preview);
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_stream(stream, NULL, NULL);
+  g_object_unref(stream);
+  g_bytes_unref(preview);
+
+  if(pixbuf)
+  {
+    // Scale pixbuf to a thumbnail
+    double sw = gdk_pixbuf_get_width(pixbuf);
+    double scale = 75.0 / gdk_pixbuf_get_height(pixbuf);
+    thumb = gdk_pixbuf_scale_simple(pixbuf, sw * scale, 75, GDK_INTERP_BILINEAR);
+    g_object_unref(pixbuf);
+  }
+  return thumb;
+}
+#endif
+
 // maybe this should be (partly) in imageio/imageio.[c|h]?
 static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
 {
@@ -542,7 +567,7 @@ static void _thumb_set_in_listview(GtkTreeModel *model,
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
     pixbuf = thumb_sel ?
-      dt_camctl_get_thumbnail(darktable.camctl, d->camera, filename)
+      _camera_get_thumbnail(d->camera, filename)
       : d->from.eye;
   else
 #endif
