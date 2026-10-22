@@ -22,6 +22,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "control/control.h"
+#include "gui/gtk.h"
 #include <glib.h>   // for GList, gpointer, g_list_prepend
 #include <stdlib.h> // for NULL, malloc, free
 #include <sys/time.h>

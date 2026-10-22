@@ -27,6 +27,7 @@
 #include "develop/masks.h"
 #include "develop/tiling.h"
 #include "develop/imageop_math.h"
+#include "develop/blend_gui.h"
 #include <math.h>
 
 typedef enum _develop_mask_post_processing

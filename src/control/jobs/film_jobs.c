@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/film.h"
+#include "gui/gtk.h"
 
 #include <stdlib.h>
 

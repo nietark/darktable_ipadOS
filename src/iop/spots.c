@@ -21,6 +21,7 @@
 #include "common/gdk_event_utils.h"
 #include "common/imagebuf.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/masks.h"

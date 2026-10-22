@@ -19,6 +19,7 @@
 
 #include "common/darktable.h"
 #include "common/color_picker.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/accelerators.h"
 #include "scopes.h"
 #include "dtgtk/togglebutton.h"

@@ -26,7 +26,9 @@
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "gui/gtk.h"
 #include "imageio/imageio_rawspeed.h"
+#include "views/view.h"
 
 #include <assert.h>
 #include <glib.h>

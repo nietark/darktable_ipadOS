@@ -34,6 +34,7 @@
 #include "common/usermanual_url.h"
 #include "control/control.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/develop.h"
 #include "develop/format.h"
 #include "develop/masks.h"

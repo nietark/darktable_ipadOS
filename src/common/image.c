@@ -16,6 +16,7 @@
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/act_on.h"
 #include "common/dtdata.h"
 #include "common/image.h"
 #include "common/collection.h"
@@ -43,6 +44,7 @@
 #include "imageio/imageio_rawspeed.h"
 #include "imageio/imageio_libraw.h"
 #include "win/filepath.h"
+#include "views/view.h"
 
 #ifdef USE_LUA
 #include "lua/image.h"

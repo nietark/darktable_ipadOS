@@ -30,6 +30,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "gui/gtk.h"
 
 #include <lcms2.h>
 #include <strings.h>

@@ -41,6 +41,7 @@
 #include "bauhaus/bauhaus.h"
 #include "chart/common.h"
 #include "develop/imageop_gui.h"
+#include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
 #include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"

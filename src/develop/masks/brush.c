@@ -23,9 +23,11 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
+#include "views/view.h"
 
 #define HARDNESS_MIN 0.0005f
 #define HARDNESS_MAX 1.0f

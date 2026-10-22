@@ -21,7 +21,7 @@
 #include <glib.h>
 #include <inttypes.h>
 #include <stddef.h>
-#include <views/view.h>
+#include "views/view_types.h"
 
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers

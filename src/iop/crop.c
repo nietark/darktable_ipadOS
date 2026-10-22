@@ -29,6 +29,7 @@
 #include "develop/imageop_gui.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"

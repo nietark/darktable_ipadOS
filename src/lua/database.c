@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/film.h"
 #include "common/grealpath.h"
+#include "common/history.h"
 #include "common/image.h"
 #include "control/control.h"
 #include "lua/events.h"

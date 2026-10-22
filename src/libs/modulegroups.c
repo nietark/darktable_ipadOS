@@ -27,6 +27,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/blend_gui.h"
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
 #include "dtgtk/togglebutton.h"

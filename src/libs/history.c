@@ -32,6 +32,7 @@
 #include "libs/lib_api.h"
 #include "common/history.h"
 #include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
 #include <complex.h>
 #include <locale.h>
 

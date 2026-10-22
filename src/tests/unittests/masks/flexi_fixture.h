@@ -59,6 +59,7 @@
 
 #include "common/darktable.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/blend_gui_internal.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"

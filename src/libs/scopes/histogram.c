@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"

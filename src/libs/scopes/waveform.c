@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/iop_profile.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "dtgtk/paint.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"

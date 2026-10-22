@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
+#include "gui/gtk.h"
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"

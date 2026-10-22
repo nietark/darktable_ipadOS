@@ -34,6 +34,7 @@
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/blend_gui_internal.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"

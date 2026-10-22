@@ -34,6 +34,7 @@
 
 #include "control/conf.h"
 #include "control/control.h"
+#include "gui/gtk.h"
 
 #include <gio/gio.h>
 #include <glib.h>

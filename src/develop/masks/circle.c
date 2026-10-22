@@ -22,9 +22,11 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
+#include "views/view.h"
 
 #define MIN_CIRCLE_RADIUS 0.0005f
 #define MIN_CIRCLE_BORDER 0.0005f

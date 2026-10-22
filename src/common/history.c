@@ -35,6 +35,7 @@
 #include "develop/masks.h"
 #include "gui/hist_dialog.h"
 #include "imageio/imageio_common.h"
+#include "views/view.h"
 
 void dt_history_item_free(gpointer data)
 {

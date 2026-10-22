@@ -31,6 +31,7 @@
 #include "control/conf.h"
 #include "control/signal.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/blend_gui_internal.h"
 #include "develop/develop.h"
 #include "dtgtk/expander.h"

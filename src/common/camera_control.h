@@ -29,7 +29,7 @@
 #endif
 #endif //defined (_WIN32)
 #include <gphoto2/gphoto2.h>
-#include <gtk/gtk.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t

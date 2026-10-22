@@ -23,6 +23,7 @@
 #include "common/histogram.h"
 #include "common/iop_profile.h"
 #include "gui/gtk.h"
+#include "views/view.h"
 
 G_BEGIN_DECLS
 

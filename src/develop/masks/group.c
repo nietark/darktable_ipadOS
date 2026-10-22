@@ -20,9 +20,11 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/masks/group_internal.h"
+#include "gui/gtk.h"
 
 static int _group_events_mouse_scrolled(dt_iop_module_t *module,
                                         const float pzx,

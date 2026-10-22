@@ -22,10 +22,17 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
+#include "views/view.h"
 
 #pragma GCC diagnostic ignored "-Wshadow"
+
+float dt_masks_sensitive_dist(const float zoom_scale)
+{
+  return DT_PIXEL_APPLY_DPI(7) / zoom_scale;
+}
 
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
 {

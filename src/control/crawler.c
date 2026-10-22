@@ -34,6 +34,7 @@
 #include "crawler.h"
 #include "gui/gtk.h"
 #include "gui/splash.h"
+#include "views/view.h"
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"

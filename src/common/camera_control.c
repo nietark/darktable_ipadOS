@@ -21,6 +21,7 @@
 #include "common/image.h"
 #include "control/control.h"
 #include "imageio/imageio_jpeg.h"
+#include "views/view.h"
 
 #include <glib-2.0/gio/gmenu.h>
 #include <gphoto2/gphoto2-file.h>

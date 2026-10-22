@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/act_on.h"
+#include "views/view_types.h"
 #include "common/action.h"
 #include "common/history.h"
 #include "common/image.h"
@@ -44,26 +45,6 @@
 #include "lua/types.h"
 #include "lua/view.h"
 #endif
-
-/** available views flags, a view should return its type and
-    is also used in modules flags available in src/libs to
-    control which view the module should be available in also
-    which placement in the panels the module have.
-*/
-typedef enum dt_view_type_flags_t
-{
-  DT_VIEW_NONE       = 0,
-  DT_VIEW_LIGHTTABLE = 1 << 0,
-  DT_VIEW_DARKROOM   = 1 << 1,
-  DT_VIEW_TETHERING  = 1 << 2,
-  DT_VIEW_MAP        = 1 << 3,
-  DT_VIEW_SLIDESHOW  = 1 << 4,
-  DT_VIEW_PRINT      = 1 << 5,
-  DT_VIEW_MULTI      = 1 << 28,
-  DT_VIEW_FALLBACK   = 1 << 29,
-  DT_VIEW_OTHER      = 1 << 30, // for your own unpublished user view
-  DT_VIEW_ALL        = ~DT_VIEW_FALLBACK,
-} dt_view_type_flags_t;
 
 // flags that a view can set in flags()
 typedef enum dt_view_flags_t

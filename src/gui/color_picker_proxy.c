@@ -24,6 +24,7 @@
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "dtgtk/togglebutton.h"
 
 /*

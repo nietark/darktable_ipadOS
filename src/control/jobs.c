@@ -18,6 +18,7 @@
 
 #include "control/jobs.h"
 #include "control/control.h"
+#include "views/view.h"
 
 #define DT_CONTROL_FG_PRIORITY 4
 #define DT_CONTROL_MAX_JOBS 30

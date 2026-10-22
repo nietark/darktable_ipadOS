@@ -18,6 +18,7 @@
 #include "common/gdk_event_utils.h"
 
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/blend_gui_internal.h"
 #include "bauhaus/bauhaus.h"
 #include "common/database.h"

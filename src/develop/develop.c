@@ -37,6 +37,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/lightroom.h"
@@ -45,6 +46,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "imageio/imageio_common.h"
+#include "views/view.h"
 
 #ifdef USE_LUA
 #include "lua/call.h"

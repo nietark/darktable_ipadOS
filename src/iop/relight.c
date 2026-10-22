@@ -30,6 +30,8 @@
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "develop/imageop_gui.h"
+#include "dtgtk/gradientslider.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 

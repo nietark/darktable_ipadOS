@@ -30,6 +30,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/blend_gui.h"
 #include "gui/gtk.h"
 
 #include <glib/gstdio.h>

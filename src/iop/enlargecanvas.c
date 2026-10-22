@@ -18,6 +18,7 @@
 
 // our includes go first:
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/borders_helper.h"
 #include "develop/imageop_gui.h"

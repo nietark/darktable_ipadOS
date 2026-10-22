@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/act_on.h"
 #include "control/jobs/control_jobs.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -47,6 +48,7 @@
 
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
+#include "views/view.h"
 
 #include <gio/gio.h>
 #include <glib.h>
