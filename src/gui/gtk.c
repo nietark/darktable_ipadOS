@@ -5418,6 +5418,55 @@ dt_gui_database_choice_t dt_gui_database_corrupt_dialog(const char *filename,
        : DT_GUI_DATABASE_CLOSE;
 }
 
+gboolean dt_gui_ask_delete_empty_dirs(GList *empty_dirs)
+{
+  const int n_empty_dirs = g_list_length(empty_dirs);
+
+  GtkWidget *dialog;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  dialog = gtk_message_dialog_new
+    (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+     GTK_BUTTONS_YES_NO,
+     ngettext("do you want to delete this empty directory?",
+              "do you want to delete these empty directories?", n_empty_dirs));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+
+  gtk_window_set_title(GTK_WINDOW(dialog),
+                       ngettext("delete empty directory?",
+                                "delete empty directories?", n_empty_dirs));
+
+  GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+
+  for(GList *list_iter = empty_dirs; list_iter; list_iter = g_list_next(list_iter))
+  {
+    gtk_list_store_insert_with_values(store, NULL, -1, 0, list_iter->data, -1);
+  }
+
+  GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
+  gtk_widget_set_name(GTK_WIDGET(tree), "delete-dialog");
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), gtk_cell_renderer_text_new(),
+                                                                       "text", 0, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  GtkWidget *scroll = dt_gui_scroll_wrap(tree);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(25));
+
+  dt_gui_dialog_add(GTK_DIALOG(dialog), scroll);
+
+  gtk_widget_show_all(dialog); // needed for the content area!
+
+  const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+  g_object_unref(store);
+
+  return res == GTK_RESPONSE_YES;
+}
+
 char *dt_gui_show_standalone_string_dialog(const char *title,
                                            const char *markup,
                                            const char *placeholder,
@@ -5552,6 +5601,28 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
   g_free(question);
 
   return resp == GTK_RESPONSE_YES;
+}
+
+gchar *dt_gui_select_destination_dir(const char *conf_key)
+{
+  gchar *dir = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  GtkFileChooserNative *filechooser =
+    gtk_file_chooser_native_new(_("select directory"),
+                                GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                _("_select as destination"),
+                                _("_cancel"));
+
+  dt_conf_get_folder_to_file_chooser(conf_key, GTK_FILE_CHOOSER(filechooser));
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_folder_from_file_chooser(conf_key, GTK_FILE_CHOOSER(filechooser));
+  }
+  g_object_unref(filechooser);
+
+  return dir;
 }
 
 // TODO: should that go to another place than gtk.c?

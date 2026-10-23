@@ -626,6 +626,9 @@ void dt_develop_blendif_make_mask_cl(dt_dev_pixelpipe_iop_t *piece,
     history reloads in the core keep it in step through these */
 void dt_iop_gui_update_blending(dt_iop_module_t *module);
 void dt_iop_gui_update_masks(dt_iop_module_t *module);
+/** the module's name changed: refresh the mask panels whose raster elements
+    are named after it */
+void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module);
 // select the row of the shape selected on the canvas. Does nothing without a
 // mask list
 void dt_iop_gui_blend_masks_select_form(dt_iop_module_t *module, dt_mask_id_t formid);

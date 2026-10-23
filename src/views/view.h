@@ -393,8 +393,6 @@ void dt_view_manager_expose(dt_view_manager_t *vm,
                             const int32_t height,
                             const int32_t pointerx,
                             const int32_t pointery);
-/** reset current view. */
-void dt_view_manager_reset(dt_view_manager_t *vm);
 /** get current view of the view manager. */
 const dt_view_t *dt_view_manager_get_current_view(const dt_view_manager_t *vm);
 

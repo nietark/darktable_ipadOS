@@ -37,16 +37,18 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "develop/blend.h"
+#ifndef DT_NO_GUI
 #include "develop/blend_gui.h"
+#include "gui/gtk.h"
+#include "views/view.h"
+#endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/lightroom.h"
 #include "develop/masks.h"
 #include "libs/modulegroups.h"
-#include "gui/gtk.h"
 #include "gui/presets.h"
 #include "imageio/imageio_common.h"
-#include "views/view.h"
 
 #ifdef USE_LUA
 #include "lua/call.h"
@@ -122,6 +124,7 @@ void dt_dev_init(dt_develop_t *dev,
     dev->darkroom_mouse_in_center_area = FALSE;
     dev->darkroom_skip_mouse_events = FALSE;
 
+#ifndef DT_NO_GUI
     if(darktable.gui)
     {
       dev->full.ppd = darktable.gui->ppd;
@@ -129,6 +132,7 @@ void dt_dev_init(dt_develop_t *dev,
       dev->full.dpi_factor = darktable.gui->dpi_factor;
       dev->full.widget = dt_ui_center(darktable.gui->ui);
     }
+#endif
   }
 
   dev->iop_instance = 0;
@@ -480,6 +484,7 @@ static void _activate_pinned_dev(dt_develop_t *dev, dt_develop_t *new_pinned_dev
 
   // Update the pin button without re-firing its toggled callback, which would
   // call dt_dev_toggle_preview2_pinned and undo the pin.
+#ifndef DT_NO_GUI
   if(dev->preview2.pin_button)
   {
     g_signal_handlers_block_matched(G_OBJECT(dev->preview2.pin_button),
@@ -489,6 +494,7 @@ static void _activate_pinned_dev(dt_develop_t *dev, dt_develop_t *new_pinned_dev
                                       G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, dev);
     gtk_widget_set_tooltip_text(dev->preview2.pin_button, _("unpin image"));
   }
+#endif
 
   dt_toast_log(_("image pinned"));
 }
@@ -542,6 +548,7 @@ static void _unpin_image(dt_develop_t *dev)
   dev->preview2.pipe->changed |= DT_DEV_PIPE_SYNCH;
 
   // Update the pin button without re-firing its toggled callback.
+#ifndef DT_NO_GUI
   if(dev->preview2.pin_button)
   {
     g_signal_handlers_block_matched(G_OBJECT(dev->preview2.pin_button),
@@ -551,6 +558,7 @@ static void _unpin_image(dt_develop_t *dev)
                                       G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, dev);
     gtk_widget_set_tooltip_text(dev->preview2.pin_button, _("pin current image"));
   }
+#endif
 
   dt_toast_log(_("image unpinned"));
 }
@@ -583,8 +591,10 @@ void dt_dev_toggle_preview2_pinned(dt_develop_t *dev)
     _unpin_image(dev);
 
   // Force a redraw of the second window
+#ifndef DT_NO_GUI
   if(dev->preview2.widget)
     gtk_widget_queue_draw(dev->preview2.widget);
+#endif
 }
 
 void dt_dev_pin_image(dt_develop_t *dev, const dt_imgid_t imgid)
@@ -678,7 +688,11 @@ void dt_dev_process_image_job(dt_develop_t *dev,
     return;
   }
 
+#ifndef DT_NO_GUI
   if(port == &dev->preview2 && !(port->widget && GTK_IS_WIDGET(port->widget)))
+#else
+  if(port == &dev->preview2 && !port->widget)
+#endif
   {
     return;
   }
@@ -4309,6 +4323,7 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
 // set the module list order
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev)
 {
+#ifndef DT_NO_GUI
   int pos_module = 0;
   for(const GList *modules = g_list_last(dev->iop);
       modules;
@@ -4325,6 +4340,7 @@ void dt_dev_reorder_gui_module_list(dt_develop_t *dev)
                             pos_module++);
     }
   }
+#endif
 }
 
 void dt_dev_undo_start_record(dt_develop_t *dev)

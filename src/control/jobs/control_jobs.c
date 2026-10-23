@@ -46,9 +46,12 @@
 #include "imageio/imageio_module.h"
 #include "imageio/imageio_rawspeed.h"
 
+#include "gui/hooks.h"
+#ifndef DT_NO_GUI
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
 #include "views/view.h"
+#endif
 
 #include <gio/gio.h>
 #include <glib.h>
@@ -1218,6 +1221,7 @@ typedef enum _dt_delete_dialog_choice_t
   _DT_DELETE_DIALOG_CHOICE_ALL      = 1 << 5,
 } _dt_delete_dialog_choice_t;
 
+#ifndef DT_NO_GUI
 static gboolean _delete_dialog_main_thread(gpointer user_data)
 {
   _dt_delete_modal_dialog_t* modal_dialog = (_dt_delete_modal_dialog_t*)user_data;
@@ -1311,6 +1315,15 @@ static gint _dt_delete_file_display_modal_dialog(const int send_to_trash,
 
   return modal_dialog.dialog_result;
 }
+#else
+// without a GUI nobody can be asked, so take the dialog's default answer
+static gint _dt_delete_file_display_modal_dialog(const int send_to_trash,
+                                                 const char *filename,
+                                                 const char *error_message)
+{
+  return _DT_DELETE_DIALOG_CHOICE_STOP;
+}
+#endif
 
 static _dt_delete_status_t delete_file_from_disk
   (const char *filename,
@@ -1786,6 +1799,7 @@ static inline gboolean _safe_history_job_on_imgid(dt_job_t *job, const dt_imgid_
     || darktable.develop->image_storage.id != imgid;
 }
 
+#ifndef DT_NO_GUI
 static int32_t _control_paste_history_job_run(dt_job_t *job)
 {
   dt_stop_backthumbs_crawler(FALSE);
@@ -1856,6 +1870,7 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   dt_start_backthumbs_crawler();
   return 0;
 }
+#endif
 
 static int32_t _control_compress_history_job_run(dt_job_t *job)
 {
@@ -2371,7 +2386,6 @@ void dt_control_move_images()
 {
   // Open file chooser dialog
   gchar *dir = NULL;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   dt_job_t *job = _control_generic_images_job_create
     (&_control_move_images_job_run, N_("move images"), 0, dir,
@@ -2384,18 +2398,7 @@ void dt_control_move_images()
     return;
   }
 
-  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        _("_select as destination"), _("_cancel"));
-
-  dt_conf_get_folder_to_file_chooser("ui_last/move_path", GTK_FILE_CHOOSER(filechooser));
-  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
-  {
-    dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_folder_from_file_chooser("ui_last/move_path",
-                                         GTK_FILE_CHOOSER(filechooser));
-  }
-  g_object_unref(filechooser);
+  dir = dt_gui_select_destination_dir("ui_last/move_path");
 
   if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR)) goto abort;
 
@@ -2428,7 +2431,6 @@ void dt_control_copy_images()
 {
   // Open file chooser dialog
   gchar *dir = NULL;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   dt_job_t *job = _control_generic_images_job_create
     (&_control_copy_images_job_run, N_("copy images"), 0, dir,
      PROGRESS_CANCELLABLE, FALSE);
@@ -2440,21 +2442,7 @@ void dt_control_copy_images()
     return;
   }
 
-  GtkFileChooserNative *filechooser =
-    gtk_file_chooser_native_new(_("select directory"),
-                                GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                                _("_select as destination"),
-                                _("_cancel"));
-
-  dt_conf_get_folder_to_file_chooser("ui_last/copy_path",
-                                     GTK_FILE_CHOOSER(filechooser));
-  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
-  {
-    dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_folder_from_file_chooser("ui_last/copy_path",
-                                         GTK_FILE_CHOOSER(filechooser));
-  }
-  g_object_unref(filechooser);
+  dir = dt_gui_select_destination_dir("ui_last/copy_path");
 
   if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
     goto abort;
@@ -2594,6 +2582,7 @@ static void _add_history_job_data(const char *title,
   }
 }
 
+#ifndef DT_NO_GUI
 void dt_control_paste_history(GList *imgs)
 {
   if(!dt_is_valid_imgid(darktable.view_manager->copy_paste.copied_imageid))
@@ -2649,6 +2638,7 @@ void dt_control_paste_parts_history(GList *imgs)
   else
     g_list_free(imgs);
 }
+#endif
 
 void dt_control_compress_history(GList *imgs)
 {

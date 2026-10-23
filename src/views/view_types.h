@@ -63,6 +63,10 @@ typedef enum dt_view_image_over_t
 /** get the type of the currently active view in darktable.view_manager. */
 dt_view_type_flags_t dt_view_get_current(void);
 
+struct dt_view_manager_t;
+/** reset current view. */
+void dt_view_manager_reset(struct dt_view_manager_t *vm);
+
 G_END_DECLS
 
 // clang-format off

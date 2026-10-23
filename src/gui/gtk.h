@@ -175,7 +175,6 @@ int dt_gui_theme_init(dt_gui_gtk_t *gui);
 int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
-void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
 int dt_gui_gtk_load_config();
 int dt_gui_gtk_write_config();
@@ -517,11 +516,6 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
                                            const char *placeholder,
                                            const char *no_text,
                                            const char *yes_text);
-
-// returns TRUE if YES was answered, FALSE otherwise
-gboolean dt_gui_show_yes_no_dialog(const char *title,
-                                   const char *wname,
-                                   const char *format, ...);
 
 void dt_gui_add_help_link(GtkWidget *widget,
                           const char *link);

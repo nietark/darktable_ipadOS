@@ -16,7 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef DT_NO_GUI
 #include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "views/view.h"
+#include <gdk/gdkkeysyms.h>
+#endif
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -25,13 +32,9 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "gui/accelerators.h"
-#include "gui/draw.h"
-#include "gui/gtk.h"
+#include "gui/hooks.h"
 #include "imageio/imageio_common.h"
-#include "views/view.h"
 
-#include <gdk/gdkkeysyms.h>
 #include <glib/gstdio.h>
 #include <lcms2.h>
 #include <math.h>
@@ -41,6 +44,7 @@
 
 #define DT_CTL_LOG_HISTORY_SIZE 1000
 
+#ifndef DT_NO_GUI
 static float _action_process_accels_show(const gpointer target,
                                          const dt_action_element_t element,
                                          const dt_action_effect_t effect,
@@ -107,6 +111,7 @@ const dt_action_def_t dt_action_def_modifiers
       _action_process_modifiers,
       _action_elements_modifiers,
       NULL, TRUE };
+#endif
 
 void dt_control_init(const gboolean withgui)
 {
@@ -206,6 +211,7 @@ void dt_control_init(const gboolean withgui)
   dt_atomic_set_int(&s->pending_jobs, 0);
   s->cups_started = FALSE;
 
+#ifndef DT_NO_GUI
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
   dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
   dt_action_define_fallback(DT_ACTION_TYPE_VALUE_FALLBACK, &dt_action_def_value);
@@ -217,6 +223,7 @@ void dt_control_init(const gboolean withgui)
 
   s->actions_modifiers = dt_action_define(&s->actions_global, NULL,
                                           N_("modifiers"), NULL, &dt_action_def_modifiers);
+#endif
 
   // same thread as init
   s->gui_thread = pthread_self();
@@ -250,6 +257,7 @@ void dt_control_init(const gboolean withgui)
   s->lock_cursor_shape = FALSE;
 }
 
+#ifndef DT_NO_GUI
 void dt_control_forbid_change_cursor()
 {
   dt_control_cursor_debug("control/lock", "forbid", NULL, NULL);
@@ -378,6 +386,7 @@ void dt_control_change_cursor(const char *cursor_name)
   _change_cursor_with_fallback(cursor_name, FALSE, "control/change",
                                dt_ui_main_window(darktable.gui->ui));
 }
+#endif
 
 /* Some implementation and how-to use notes about control->running
   It is declared as a global gint with states defined in dt_control_state_t and may only be
@@ -511,6 +520,7 @@ void dt_control_cleanup(const gboolean withgui)
 //  gui functions:
 // ================================================================================
 
+#ifndef DT_NO_GUI
 gboolean dt_control_configure(GtkWidget *da,
                               GdkEventConfigure *event,
                               gpointer user_data)
@@ -723,6 +733,7 @@ void dt_ctl_switch_mode()
                       : "lighttable";
   dt_ctl_switch_mode_to(mode);
 }
+#endif
 
 static void _control_log_redraw()
 {
@@ -774,6 +785,7 @@ static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
   return FALSE;
 }
 
+#ifndef DT_NO_GUI
 void dt_control_button_pressed(double x,
                                double y,
                                double pressure,
@@ -833,6 +845,7 @@ void dt_control_button_pressed(double x,
                                      pressure, which, type, state))
     if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
 }
+#endif
 
 static gboolean _redraw_center(gpointer user_data)
 {
@@ -1036,6 +1049,7 @@ void dt_control_navigation_redraw()
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
 }
 
+#ifndef DT_NO_GUI
 static int _widget_queue_draw(void *widget)
 {
   gtk_widget_queue_draw((GtkWidget*)widget);
@@ -1051,6 +1065,7 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
     g_idle_add(_widget_queue_draw, (void*)widget);
   }
 }
+#endif
 
 void dt_control_hinter_message(const char *message)
 {

@@ -26,7 +26,8 @@
 #include "control/control.h"
 #include "control/crawler.h"
 #include "control/jobs.h"
-#include "views/view.h"
+#include "gui/hooks.h"
+#include "views/view_types.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -339,54 +340,11 @@ dt_filmid_t dt_film_import(const char *dirname)
 static gboolean ask_and_delete(gpointer user_data)
 {
   GList *empty_dirs = (GList *)user_data;
-  const int n_empty_dirs = g_list_length(empty_dirs);
-
-  GtkWidget *dialog;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
-  dialog = gtk_message_dialog_new
-    (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-     GTK_BUTTONS_YES_NO,
-     ngettext("do you want to delete this empty directory?",
-              "do you want to delete these empty directories?", n_empty_dirs));
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dialog);
-#endif
-
-  gtk_window_set_title(GTK_WINDOW(dialog),
-                       ngettext("delete empty directory?",
-                                "delete empty directories?", n_empty_dirs));
-
-  GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
-
-  for(GList *list_iter = empty_dirs; list_iter; list_iter = g_list_next(list_iter))
-  {
-    gtk_list_store_insert_with_values(store, NULL, -1, 0, list_iter->data, -1);
-  }
-
-  GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
-  gtk_widget_set_name(GTK_WIDGET(tree), "delete-dialog");
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), gtk_cell_renderer_text_new(),
-                                                                       "text", 0, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-  GtkWidget *scroll = dt_gui_scroll_wrap(tree);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(25));
-
-  dt_gui_dialog_add(GTK_DIALOG(dialog), scroll);
-
-  gtk_widget_show_all(dialog); // needed for the content area!
-
-  const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-  gtk_widget_destroy(dialog);
-  if(res == GTK_RESPONSE_YES)
+  if(dt_gui_ask_delete_empty_dirs(empty_dirs))
     for(GList *iter = empty_dirs; iter; iter = g_list_next(iter))
       rmdir((char *)iter->data);
 
   g_list_free_full(empty_dirs, g_free);
-  g_object_unref(store);
 
   return FALSE;
 }

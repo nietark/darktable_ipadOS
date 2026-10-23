@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <gtk/gtk.h>
+#include <glib.h>
 
 void dt_splash_screen_create(const gboolean force);
 void dt_splash_screen_allow_create(const gboolean allow_create);

@@ -321,6 +321,7 @@ char *dt_version_major_minor();
   #define DT_FMA(x, y, z) ((x) * (y) + (z))
 #endif
 
+#ifndef DT_NO_GUI
 #define DT_TRY_GUI_UPDATE(ret)                                         \
      if(!dt_atomic_incr_int_if_zero(&darktable.gui->reset)) return ret \
 
@@ -337,6 +338,16 @@ char *dt_version_major_minor();
 
 #define DT_LEAVE_GUI_UPDATE()                                       \
     dt_atomic_decr_int(&darktable.gui->reset)                       \
+
+#else
+// no widgets, so no callbacks that an update could set off
+#define DT_TRY_GUI_UPDATE(ret)
+#define DT_GUARD_GUI_UPDATE(ret)
+#define DT_IN_GUI_UPDATE() FALSE
+#define DT_CLEAR_GUI_UPDATE()
+#define DT_ENTER_GUI_UPDATE()
+#define DT_LEAVE_GUI_UPDATE()
+#endif
 
 struct dt_gui_gtk_t;
 struct dt_control_t;

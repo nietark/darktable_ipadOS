@@ -16,10 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/gdk_event_utils.h"
 
 #include "develop/imageop.h"
-#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
@@ -34,28 +32,18 @@
 #include "common/usermanual_url.h"
 #include "control/control.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
 #include "develop/develop.h"
 #include "develop/format.h"
 #include "develop/masks.h"
 #include "develop/tiling.h"
-#include "dtgtk/button.h"
-#include "dtgtk/expander.h"
-#include "dtgtk/gradientslider.h"
-#include "dtgtk/icon.h"
-#include "dtgtk/togglebutton.h"
-#include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
-#include "gui/drag_and_drop.h"
-#include "gui/gtk.h"
-#include "gui/guides.h"
 #include "gui/presets.h"
 #include "gui/splash.h"
 #include "imageio/imageio_rawspeed.h"
+#include "libs/lib_proxy.h"
 #include "libs/modulegroups.h"
 
 #include <glib-2.0/gio/gio.h>
-#include <gtk/gtk.h>
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -70,6 +58,23 @@
 #include <strings.h>
 #include <time.h>
 
+#ifndef DT_NO_GUI
+#include "common/gdk_event_utils.h"
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
+#include "dtgtk/button.h"
+#include "dtgtk/expander.h"
+#include "dtgtk/gradientslider.h"
+#include "dtgtk/icon.h"
+#include "dtgtk/togglebutton.h"
+#include "gui/accelerators.h"
+#include "gui/drag_and_drop.h"
+#include "gui/gtk.h"
+#include "gui/guides.h"
+#include <gtk/gtk.h>
+#endif
+
+#ifndef DT_NO_GUI
 typedef struct dt_iop_gui_simple_callback_t
 {
   dt_iop_module_t *self;
@@ -97,6 +102,7 @@ static GActionEntry _instance_action_entries[] = {
   { "delete",       _gui_delete_callback,    NULL, NULL },
   { "rename",       _gui_rename_callback,    NULL, NULL },
 };
+#endif
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -474,6 +480,7 @@ void dt_iop_init_pipe(dt_iop_module_t *module,
   piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
 }
 
+#ifndef DT_NO_GUI
 #if !GTK_CHECK_VERSION(4, 0, 0)
 static gboolean _pointer_in_module(const dt_iop_module_t *module)
 {
@@ -1313,6 +1320,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton,
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
 }
+#endif
 
 gboolean dt_iop_so_is_hidden(const dt_iop_module_so_t *module)
 {
@@ -1341,6 +1349,7 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, const uint32_t group)
   return dt_dev_modulegroups_test(module->dev, group, module);
 }
 
+#ifndef DT_NO_GUI
 static void _iop_panel_name(dt_iop_module_t *module)
 {
   // IOP instance name if any
@@ -1443,6 +1452,7 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 
   _update_module_active_class(module);
 }
+#endif
 
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        const char* const trouble_msg,
@@ -1474,6 +1484,7 @@ void dt_iop_clear_module_trouble_message(dt_iop_module_t *const module)
   dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
 }
 
+#ifndef DT_NO_GUI
 void dt_iop_gui_init(dt_iop_module_t *module)
 {
   DT_ENTER_GUI_UPDATE();
@@ -1485,6 +1496,7 @@ void dt_iop_gui_init(dt_iop_module_t *module)
   ++darktable.bauhaus->skip_accel;
   DT_LEAVE_GUI_UPDATE();
 }
+#endif
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
@@ -1906,6 +1918,7 @@ static void _init_module_so(void *m)
       g_free(msg);
       dt_iop_gui_init(module_instance);
 
+#ifndef DT_NO_GUI
       static gboolean blending_accels_initialized = FALSE;
       if(!blending_accels_initialized)
       {
@@ -1923,6 +1936,7 @@ static void _init_module_so(void *m)
           blending_accels_initialized = TRUE;
         }
       }
+#endif
 
       dt_iop_gui_cleanup_module(module_instance);
       dt_iop_cleanup_module(module_instance);
@@ -2596,6 +2610,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
   piece->hash = phash;
 }
 
+#ifndef DT_NO_GUI
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
   if(darktable.develop->header_buttons_module == module)
@@ -2656,6 +2671,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   }
   DT_LEAVE_GUI_UPDATE();
 }
+#endif
 
 void dt_iop_gui_reset(dt_iop_module_t *module)
 {
@@ -2709,6 +2725,7 @@ void dt_iop_reset_params(dt_iop_module_t *module)
   _commit_reset_blend_params(module, &before);
 }
 
+#ifndef DT_NO_GUI
 // kept for direct callers from accelerators
 static gboolean _gui_reset_callback(GtkButton *button,
                                     GdkEventButton *event,
@@ -2871,6 +2888,7 @@ static void _presets_scrolled(GtkEventControllerScroll *controller,
 
   dt_gui_presets_apply_adjacent_preset(module, delta);
 }
+#endif
 
 gboolean dt_iop_has_focus(const dt_iop_module_t *module)
 {
@@ -2881,6 +2899,7 @@ gboolean dt_iop_has_focus(const dt_iop_module_t *module)
       && dt_dev_modulegroups_test_activated(darktable.develop);
 }
 
+#ifndef DT_NO_GUI
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   dt_develop_t *dev = darktable.develop;
@@ -3975,6 +3994,7 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
   // return gtkframe (pluginui_frame)
   return dtgtk_expander_get_frame(DTGTK_EXPANDER(module->expander));
 }
+#endif
 
 void dt_iop_nap(int32_t usec)
 {
@@ -4044,6 +4064,7 @@ int dt_iop_get_module_flags(const char *op)
   return 0;
 }
 
+#ifndef DT_NO_GUI
 static void _show_module_callback(dt_iop_module_t *module)
 {
   // Showing the module, if it isn't already visible
@@ -4086,6 +4107,7 @@ static void _enable_module_callback(dt_iop_module_t *module)
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 }
+#endif
 
 const gchar *dt_iop_get_localized_name(const gchar *op)
 {
@@ -4136,14 +4158,18 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
   module->state = state;
 
   char option[1024];
+#ifndef DT_NO_GUI
   GList *mods = NULL;
+#endif
   if(state == IOP_STATE_HIDDEN)
   {
+#ifndef DT_NO_GUI
     for(mods = darktable.develop->iop; mods; mods = g_list_next(mods))
     {
       dt_iop_module_t *mod = mods->data;
       if(mod->so == module && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
     }
+#endif
 
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, FALSE);
@@ -4152,6 +4178,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
   }
   else if(state == IOP_STATE_ACTIVE)
   {
+#ifndef DT_NO_GUI
     if(!DT_IN_GUI_UPDATE())
     {
       int once = 0;
@@ -4170,6 +4197,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
         }
       }
     }
+#endif
 
     /* module is shown lets set conf values */
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
@@ -4179,11 +4207,13 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
   }
   else if(state == IOP_STATE_FAVORITE)
   {
+#ifndef DT_NO_GUI
     for(mods = darktable.develop->iop; mods; mods = g_list_next(mods))
     {
       dt_iop_module_t *mod = mods->data;
       if(mod->so == module && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
     }
+#endif
 
     /* module is shown and favorite lets set conf values */
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
@@ -4448,6 +4478,7 @@ dt_iop_module_t *dt_iop_get_module_enabled_preferring_unmasked_first_instance(co
 
 /** adds keyboard accels to the first module in the pipe to handle
  * where there are multiple instances */
+#ifndef DT_NO_GUI
 void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 {
   if(!darktable.develop->gui_attached) return;
@@ -4473,6 +4504,7 @@ void dt_iop_connect_accels_all(void)
     dt_iop_connect_accels_multi(mod->so);
   }
 }
+#endif
 
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
                                                     const char *operation,
@@ -4720,6 +4752,7 @@ enum
   DT_ACTION_EFFECT_DUPLICATE = 6,
 };
 
+#ifndef DT_NO_GUI
 static float _action_process(gpointer target,
                              const dt_action_element_t element,
                              const dt_action_effect_t effect,
@@ -4846,6 +4879,7 @@ const dt_action_def_t dt_action_def_iop
       _action_process,
       _action_elements,
       _action_fallbacks };
+#endif
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

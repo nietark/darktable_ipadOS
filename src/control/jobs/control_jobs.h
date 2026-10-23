@@ -43,8 +43,10 @@ void dt_control_move_images(void);
 void dt_control_copy_images(void);
 void dt_control_compress_history(GList *imgs);
 void dt_control_discard_history(GList *imgs);
+#ifndef DT_NO_GUI
 void dt_control_paste_history(GList *imgs);
 void dt_control_paste_parts_history(GList *imgs);
+#endif
 void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicate);
 void dt_control_set_local_copy_images(void);
 void dt_control_reset_local_copy_images(void);

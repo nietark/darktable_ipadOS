@@ -38,6 +38,9 @@ void dt_gui_cursor_clear_busy();
 // (i.e. the current function will do a lot of work before returning)
 void dt_gui_process_events();
 
+// leave the main loop
+void dt_gui_gtk_quit();
+
 // show a dialog box with 2 buttons in case some user interaction is
 // required BEFORE dt's gui is initialised.  this expects gtk_init()
 // to be called already which should be the case during most of dt's
@@ -46,6 +49,15 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
                                               const char *markup,
                                               const char *no_text,
                                               const char *yes_text);
+
+// returns TRUE if YES was answered, FALSE otherwise
+gboolean dt_gui_show_yes_no_dialog(const char *title,
+                                   const char *wname,
+                                   const char *format, ...);
+
+// ask for a directory, starting from and remembering the one in the
+// config key `conf_key`. NULL when the user canceled
+gchar *dt_gui_select_destination_dir(const char *conf_key);
 
 // what to do with a database that cannot be opened, as the user chose
 typedef enum dt_gui_database_choice_t
@@ -61,6 +73,10 @@ typedef enum dt_gui_database_choice_t
 dt_gui_database_choice_t dt_gui_database_corrupt_dialog(const char *filename,
                                                         const char *quick_check_text,
                                                         const gboolean has_snapshot);
+
+// ask whether to delete the empty directories in `empty_dirs`, a list of
+// paths. TRUE when the user said yes
+gboolean dt_gui_ask_delete_empty_dirs(GList *empty_dirs);
 
 G_END_DECLS
 

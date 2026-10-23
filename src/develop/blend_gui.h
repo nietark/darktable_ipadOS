@@ -433,10 +433,6 @@ void dt_iop_gui_blend_masks_panel_sync_toolbox(void);
 // without rebuilding the list mid-drag
 void dt_iop_gui_blend_sync_pending_ai_sliders(dt_iop_module_t *module);
 
-/** the module's name changed: refresh the mask panels whose raster elements
-    are named after it */
-void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module);
-
 
 gboolean blend_color_picker_apply(dt_iop_module_t *module,
                                   GtkWidget *picker,

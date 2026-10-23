@@ -166,6 +166,7 @@ static int _get_opacity(const dt_masks_form_gui_t *gui,
   return opacity;
 }
 
+#ifndef DT_NO_GUI
 static dt_masks_type_t _get_all_types_in_group(const dt_masks_form_t *form,
                                                const int depth)
 {
@@ -188,7 +189,6 @@ static dt_masks_type_t _get_all_types_in_group(const dt_masks_form_t *form,
   }
 }
 
-#ifndef DT_NO_GUI
 GSList *dt_masks_mouse_actions(const dt_masks_form_t *form)
 {
   const dt_masks_type_t formtype = _get_all_types_in_group(form, 0);
