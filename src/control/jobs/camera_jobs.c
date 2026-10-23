@@ -24,11 +24,10 @@
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "control/jobs/image_jobs.h"
-#include "gui/gtk.h"
-#include "views/view.h"
 
 #include <glib.h>
 #include <stdio.h>
+#include "gui/hooks.h"
 
 typedef struct dt_camera_shared_t
 {

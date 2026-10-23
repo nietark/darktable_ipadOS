@@ -21,11 +21,13 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
-#include "gui/accelerators.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 
 #include <stdlib.h>
+#ifndef DT_NO_GUI
+#include "gui/accelerators.h"
+#endif
 
 static gint dt_imageio_sort_modules_storage(gconstpointer a, gconstpointer b)
 {
@@ -162,12 +164,14 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
       continue;
     }
     module->gui_data = NULL;
+#ifndef DT_NO_GUI
     if(darktable.gui)
     {
       DT_ENTER_GUI_UPDATE();
       module->gui_init(module);
       DT_LEAVE_GUI_UPDATE();
     }
+#endif
     if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);

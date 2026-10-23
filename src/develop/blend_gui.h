@@ -361,17 +361,6 @@ typedef struct dt_iop_gui_blend_data_t
 
 /** gui related stuff */
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);
-void dt_iop_gui_update_blending(dt_iop_module_t *module);
-void dt_iop_gui_update_masks(dt_iop_module_t *module);
-// select the row of the shape selected on the canvas. Does nothing without a
-// mask list
-void dt_iop_gui_blend_masks_select_form(dt_iop_module_t *module, dt_mask_id_t formid);
-// highlight the row of the shape hovered on the canvas, or its cluster's
-// header while the cluster is folded, and show the shape in the selected
-// element's panel in place of the selection. INVALID_MASKID clears both
-void dt_iop_gui_blend_masks_hover_form(dt_iop_module_t *module, dt_mask_id_t formid);
-// a click on empty canvas: nothing is selected in the panel any more
-void dt_iop_gui_blend_masks_clear_selection(dt_iop_module_t *module);
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module);
 void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module);
 // the counterpart, when a module gains focus: moves the masks panel into its
@@ -383,10 +372,6 @@ void dt_iop_gui_blending_gain_focus(dt_iop_module_t *module);
 // is parented in the host and would outlive its module. Does nothing if this
 // module's panel is not hosted
 void dt_iop_gui_blend_masks_panel_release(dt_iop_module_t *module);
-// the forms were just replaced (undo, history jump, style paste, snapshot,
-// history compression): drop the empty-group placeholders, which exist in the
-// GUI only and would duplicate a group the reload brought back
-void dt_iop_gui_blend_forms_reloaded(dt_iop_module_t *module);
 // update the mask rows' warning badges in place. A badge can depend on another
 // module (a raster element's source switched off or removed), so a signal
 // handler calls this for every module; it returns at once without a list
@@ -396,10 +381,6 @@ void dt_iop_gui_blend_refresh_mask_badges(dt_iop_module_t *module);
 // panel-wide sections only. A right-click on the toolbar's masks panel button
 // opens it
 void dt_iop_gui_blend_masks_options_popup(GtkButton *button, gpointer user_data);
-// switch the module's mask on, flexi and empty if it has none yet; does
-// nothing if it is on or the module does not blend. The folded panel's corner
-// icon in gtk.c uses it, so that a click shows a live editor, not an inert one
-void dt_iop_gui_blend_mask_enable(dt_iop_module_t *module);
 // locks or unlocks the module's mask, as a history item. The module header's
 // lock indicator unlocks through this
 void dt_iop_gui_blend_set_mask_lock(dt_iop_module_t *module, const gboolean lock);
@@ -451,24 +432,11 @@ void dt_iop_gui_blend_masks_panel_sync_toolbox(void);
 // pending-row sliders, after object.c changed them on a canvas scroll,
 // without rebuilding the list mid-drag
 void dt_iop_gui_blend_sync_pending_ai_sliders(dt_iop_module_t *module);
-// the module's shapes, or the defaults of the shape being drawn, changed on
-// the canvas: show the new values in the panel's controls without rebuilding
-// it. Called from dt_dev_masks_list_change
-void dt_iop_gui_blend_masks_changed(dt_iop_module_t *module);
 
-// remove one element from this module's mask, exactly as the panel's delete
-// does: only this module's use of it goes, and an emptied group stays in
-// place. The canvas's delete gestures come here too (see
-// dt_masks_remove_shape), so both behave the same
-void dt_iop_gui_blend_delete_element(dt_iop_module_t *module, const dt_mask_id_t id);
 /** the module's name changed: refresh the mask panels whose raster elements
     are named after it */
 void dt_iop_gui_blend_module_renamed(dt_iop_module_t *module);
 
-// shape creation ended for this module: queues the rebuild that drops the
-// panel's pending row. Called from dt_masks_change_form_gui, which every way
-// of canceling goes through, a click outside the canvas included
-void dt_iop_gui_blend_masks_creation_ended(dt_iop_module_t *module);
 
 gboolean blend_color_picker_apply(dt_iop_module_t *module,
                                   GtkWidget *picker,

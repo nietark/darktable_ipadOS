@@ -52,16 +52,6 @@ gchar *dt_shortcut_action_keys(dt_action_t *action,
                                const dt_view_type_flags_t views,
                                const gchar *separator);
 
-float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
-
-void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
-
-dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create);
-
-static inline dt_action_t *dt_action_section(dt_action_t *owner, const gchar *section)
-{
-  return dt_action_locate(owner, (gchar **)(const gchar *[]){section, NULL}, TRUE);
-}
 static inline dt_view_t *dt_action_view(dt_action_t *action)
 {
   while(action && action->type != DT_ACTION_TYPE_VIEW) action = action->owner;
@@ -73,10 +63,6 @@ static inline dt_lib_module_t *dt_action_lib(dt_action_t *action)
   return (dt_lib_module_t *)action;
 }
 
-void dt_action_define_preset(dt_action_t *action, const gchar *name);
-// rename or remove (new_name == NULL) actions or presets
-void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name);
-void dt_action_rename(dt_action_t *action, const gchar *new_name);
 
 typedef uint8_t dt_input_device_t;
 

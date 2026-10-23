@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/imagebuf.h"
 #include "common/ras2vect.h"
@@ -24,13 +23,16 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
-#include "views/view.h"
 
 #include <assert.h>
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
+#include "views/view.h"
+#endif
 
 // Per-form grow/shrink state. Every grow/shrink (whether from the scroll wheel
 // or the mask-manager slider) is a morph of one fixed `baseline` (the shape when
@@ -3182,12 +3184,14 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
            && !dt_iop_module_is(crea_module, "spots")
            && !dt_iop_module_is(crea_module, "retouch"))
         {
+#ifndef DT_NO_GUI
           dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
           for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
             if(bd->masks_type[n] == form->type)
               gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+#endif
           dt_masks_form_t *newform = dt_masks_create(form->type);
           dt_masks_change_form_gui(newform);
           darktable.develop->form_gui->creation = TRUE;
@@ -5314,6 +5318,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   return 1;
 }
 
+#ifndef DT_NO_GUI
 static GSList *_path_setup_mouse_actions(const dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
@@ -5348,6 +5353,7 @@ static GSList *_path_setup_mouse_actions(const dt_masks_form_t *const form)
                                      DT_MODIFIER_CONTROL, _("[PATH] change opacity"));
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _path_sanitize_config(dt_masks_type_t type)
 {
@@ -5600,7 +5606,9 @@ static void _path_modify_property(dt_masks_form_t *const form,
 const dt_masks_functions_t dt_masks_functions_path = {
   .point_struct_size = sizeof(struct dt_masks_point_path_t),
   .sanitize_config = _path_sanitize_config,
+#ifndef DT_NO_GUI
   .setup_mouse_actions = _path_setup_mouse_actions,
+#endif
   .set_form_name = _path_set_form_name,
   .set_hint_message = _path_set_hint_message,
   .modify_property = _path_modify_property,

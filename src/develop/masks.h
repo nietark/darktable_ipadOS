@@ -1878,6 +1878,9 @@ void dt_masks_stroke_polyline(cairo_t *cr,
 // the hit-test radius of shapes and handles, in image pixels at this zoom
 float dt_masks_sensitive_dist(const float zoom_scale);
 
+/* returns up or !up depending on the masks_updown preference */
+gboolean dt_mask_scroll_increases(int up);
+
 static inline void dt_masks_get_image_size(float *width,
                                            float *height,
                                            float *iwidth,

@@ -44,7 +44,6 @@
 #include "imageio/imageio_rawspeed.h"
 #include "imageio/imageio_libraw.h"
 #include "win/filepath.h"
-#include "views/view.h"
 
 #ifdef USE_LUA
 #include "lua/image.h"
@@ -61,6 +60,9 @@
 #include <glob.h>
 #endif
 #include <glib/gstdio.h>
+#ifndef DT_NO_GUI
+#include "views/view.h"
+#endif
 
 typedef struct dt_undo_monochrome_t
 {
@@ -1945,9 +1947,9 @@ static dt_imgid_t _image_duplicate_with_version(const dt_imgid_t imgid,
     const dt_image_t *img = dt_image_cache_get(imgid, 'r');
     const dt_imgid_t grpid = img ? img->group_id : NO_IMGID;
     dt_image_cache_read_release(img);
-    if(darktable.gui && darktable.gui->grouping)
+    if(dt_grouping_is_on())
     {
-      darktable.gui->expanded_group_id = grpid;
+      dt_grouping_set_expanded(grpid);
     }
     dt_grouping_add_to_group(grpid, newid);
 
@@ -1979,8 +1981,8 @@ void dt_image_remove(const dt_imgid_t imgid)
   dt_image_cache_remove(imgid);
 
   const dt_imgid_t new_group_id = dt_grouping_remove_from_group(imgid);
-  if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
-    darktable.gui->expanded_group_id = new_group_id;
+  if(dt_grouping_get_expanded() == old_group_id)
+    dt_grouping_set_expanded(new_group_id);
 
   // due to foreign keys added in db version 33,
   // all entries from tables having references to the images are deleted as well

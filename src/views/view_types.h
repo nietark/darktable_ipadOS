@@ -43,6 +43,26 @@ typedef enum dt_view_type_flags_t
   DT_VIEW_ALL        = ~DT_VIEW_FALLBACK,
 } dt_view_type_flags_t;
 
+typedef enum dt_view_image_over_t
+{
+  DT_VIEW_ERR     = -1,
+  DT_VIEW_DESERT  =  0,
+  DT_VIEW_STAR_1  =  1,
+  DT_VIEW_STAR_2  =  2,
+  DT_VIEW_STAR_3  =  3,
+  DT_VIEW_STAR_4  =  4,
+  DT_VIEW_STAR_5  =  5,
+  DT_VIEW_REJECT  =  6,
+  DT_VIEW_GROUP   =  7,
+  DT_VIEW_AUDIO   =  8,
+  DT_VIEW_ALTERED =  9,
+  DT_VIEW_TAGS    = 10,
+  DT_VIEW_END     = 11, // placeholder for the end of the list
+} dt_view_image_over_t;
+
+/** get the type of the currently active view in darktable.view_manager. */
+dt_view_type_flags_t dt_view_get_current(void);
+
 G_END_DECLS
 
 // clang-format off

@@ -20,9 +20,9 @@
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/film.h"
-#include "gui/gtk.h"
 
 #include <stdlib.h>
+#include "gui/hooks.h"
 
 typedef struct dt_film_import1_t
 {

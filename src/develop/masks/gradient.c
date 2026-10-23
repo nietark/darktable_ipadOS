@@ -16,18 +16,20 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/math.h"
 #include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
 #include "views/view.h"
+#endif
 
 static inline int _nb_ctrl_point(void)
 {
@@ -470,12 +472,14 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     {
       if(crea_module)
       {
+#ifndef DT_NO_GUI
         const dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
           if(bd->masks_type[n] == form->type)
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+#endif
         dt_masks_form_t *newform = dt_masks_create(form->type);
         dt_masks_change_form_gui(newform);
         darktable.develop->form_gui->creation_module = crea_module;
@@ -1380,6 +1384,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   return 1;
 }
 
+#ifndef DT_NO_GUI
 static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
@@ -1397,6 +1402,7 @@ static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
                                      DT_MODIFIER_CONTROL, _("[GRADIENT] change opacity"));
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _gradient_sanitize_config(const dt_masks_type_t type)
 {
@@ -1514,7 +1520,9 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
 const dt_masks_functions_t dt_masks_functions_gradient = {
   .point_struct_size = sizeof(struct dt_masks_point_gradient_t),
   .sanitize_config = _gradient_sanitize_config,
+#ifndef DT_NO_GUI
   .setup_mouse_actions = _gradient_setup_mouse_actions,
+#endif
   .set_form_name = _gradient_set_form_name,
   .set_hint_message = _gradient_set_hint_message,
   .modify_property = _gradient_modify_property,

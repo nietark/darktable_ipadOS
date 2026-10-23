@@ -23,7 +23,7 @@
 #include "common/utility.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
-#include "libs/lib.h"
+#include "gui/presets.h"
 #include <glib-2.0/gio/gmenu.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
@@ -34,6 +34,9 @@
 #include <glib.h>
 #include <inttypes.h>
 #include <sqlite3.h>
+#ifndef DT_NO_GUI
+#include "libs/lib.h"
+#endif
 
 static char *_preset_encode(sqlite3_stmt *stmt,
                             const int row)
@@ -329,6 +332,8 @@ gboolean dt_presets_import_from_file(const char *preset_path)
 
 gboolean dt_presets_module_can_autoapply(const gchar *operation)
 {
+  // only the utility modules can refuse, and a build without a GUI has none
+#ifndef DT_NO_GUI
   for(const GList *lib_modules = darktable.lib->plugins;
       lib_modules;
       lib_modules = g_list_next(lib_modules))
@@ -339,6 +344,7 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
       return dt_lib_presets_can_autoapply(lib_module);
     }
   }
+#endif
   return TRUE;
 }
 

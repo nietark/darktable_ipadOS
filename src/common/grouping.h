@@ -63,6 +63,15 @@ int dt_grouping_count_others(const dt_imgid_t group_id, const dt_imgid_t imgid);
 /** whether the group of imgid holds other images */
 gboolean dt_grouping_has_others(const dt_imgid_t imgid);
 
+// the lighttable's grouping, which the GUI keeps: whether it is on, and which
+// group it shows expanded. Without a GUI grouping is off and nothing is
+// expanded
+gboolean dt_grouping_is_on(void);
+dt_imgid_t dt_grouping_get_expanded(void);
+void dt_grouping_set_expanded(const dt_imgid_t group_id);
+/** does the lighttable show the group as one image? */
+gboolean dt_grouping_is_collapsed(const dt_imgid_t group_id);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

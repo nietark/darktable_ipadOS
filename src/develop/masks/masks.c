@@ -17,21 +17,29 @@
 */
 
 #include "develop/masks.h"
-#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
 #include "develop/imageop.h"
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
 #include "develop/imageop_gui.h"
 #include "views/view.h"
+#endif
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
 float dt_masks_sensitive_dist(const float zoom_scale)
 {
   return DT_PIXEL_APPLY_DPI(7) / zoom_scale;
+}
+
+gboolean dt_mask_scroll_increases(int up)
+{
+  const gboolean mask_down = dt_conf_get_bool("masks_scroll_down_increases");
+  return up ? !mask_down : mask_down;
 }
 
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
@@ -180,6 +188,7 @@ static dt_masks_type_t _get_all_types_in_group(const dt_masks_form_t *form,
   }
 }
 
+#ifndef DT_NO_GUI
 GSList *dt_masks_mouse_actions(const dt_masks_form_t *form)
 {
   const dt_masks_type_t formtype = _get_all_types_in_group(form, 0);
@@ -198,6 +207,7 @@ GSList *dt_masks_mouse_actions(const dt_masks_form_t *form)
 
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _set_hinter_message(const dt_masks_form_gui_t *gui,
                                 const dt_masks_form_t *form)
@@ -551,11 +561,13 @@ dt_masks_point_group_t *dt_masks_group_insert_point(dt_develop_t *dev,
     // The panel's target group: on top of it, which for an empty group is
     // right after its marker, at whatever depth it is. Without one the
     // element lands in the top group
-    dt_iop_gui_blend_data_t *bd = module->blend_data;
     dt_masks_form_t *owner = grp;
-    GList *after = bd && bd->insert_active && dt_is_valid_maskid(bd->insert_after_fid)
-                     ? dt_masks_group_find_node(dev->forms, grp, bd->insert_after_fid, &owner)
-                     : NULL;
+    GList *after = NULL;
+#ifndef DT_NO_GUI
+    const dt_iop_gui_blend_data_t *bd = module->blend_data;
+    if(bd && bd->insert_active && dt_is_valid_maskid(bd->insert_after_fid))
+      after = dt_masks_group_find_node(dev->forms, grp, bd->insert_after_fid, &owner);
+#endif
     grpt->parentid = owner->formid;
     owner->points = after ? g_list_insert_before(owner->points, after->next, grpt)
                           : g_list_append(owner->points, grpt);
@@ -586,11 +598,13 @@ void dt_masks_group_insert_member(dt_develop_t *dev,
     dev->form_gui->panel_selected_formid = form->formid;
   }
   // the panel selects what joined the mask, never a retouch shape
+#ifndef DT_NO_GUI
   if(module && module->blend_data && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
     dt_iop_gui_blend_data_t *bd = module->blend_data;
     bd->panel_selected_formid = form->formid;
   }
+#endif
   // we update module gui
   if(gui) dt_masks_iop_update(module);
 }
@@ -619,11 +633,13 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev,
     dev->form_gui->formid = form->formid;
     dev->form_gui->panel_selected_formid = form->formid;
   }
+#ifndef DT_NO_GUI
   if(module && module->blend_data && !(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE)))
   {
     dt_iop_gui_blend_data_t *bd = module->blend_data;
     bd->panel_selected_formid = form->formid;
   }
+#endif
 }
 
 int dt_masks_form_duplicate(dt_develop_t *dev, const dt_mask_id_t formid)
@@ -3178,7 +3194,9 @@ void dt_masks_clear_form_gui(const dt_develop_t *dev)
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
+#ifndef DT_NO_GUI
   const dt_masks_form_t *old = darktable.develop->form_visible;
+#endif
 
   // the module whose panel shows a pending row for the shape being created,
   // read before dt_masks_clear_form_gui() clears creation and creation_module
@@ -3190,11 +3208,13 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = newform;
 
+#ifndef DT_NO_GUI
   /* update sticky accels window */
   if(newform != old
      && darktable.view_manager->accels_window.window
      && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
+#endif
 
   if(newform && newform->type != DT_MASKS_GROUP)
     darktable.develop->form_gui->creation = TRUE;
@@ -3234,6 +3254,7 @@ gboolean dt_masks_cancel_creation(void)
 void dt_masks_reset_form_gui(void)
 {
   dt_masks_change_form_gui(NULL);
+#ifndef DT_NO_GUI
   const dt_iop_module_t *m = dt_dev_gui_module();
   if(m
      && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
@@ -3250,10 +3271,12 @@ void dt_masks_reset_form_gui(void)
       if(bd->masks_shapes[n])
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), 0);
   }
+#endif
 }
 
 void dt_masks_reset_show_masks_icons(void)
 {
+#ifndef DT_NO_GUI
   if(darktable.develop->first_load) return;
   for(GList *modules = darktable.develop->iop; modules; modules = g_list_next(modules))
   {
@@ -3276,6 +3299,7 @@ void dt_masks_reset_show_masks_icons(void)
       }
     }
   }
+#endif
 }
 
 dt_masks_edit_mode_t dt_masks_get_edit_mode(void)
@@ -3313,6 +3337,9 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
                             const dt_masks_edit_mode_t value)
 {
   if(!module) return;
+  // the edit mode is the masks panel's state (masks_shown): without a GUI
+  // there is none to set
+#ifndef DT_NO_GUI
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(!bd) return;
 
@@ -3376,6 +3403,7 @@ void dt_masks_set_edit_mode(dt_iop_module_t *module,
   }
 
   dt_control_queue_redraw_center();
+#endif
 }
 
 // put only `formids` on the canvas, in a scratch group, so only their outlines
@@ -3432,6 +3460,7 @@ void dt_masks_set_edit_mode_forms(dt_iop_module_t *module,
 {
   if(!module || !_set_edit_mode_forms(module, formids, value)) return;
 
+#ifndef DT_NO_GUI
   dt_iop_gui_blend_data_t *bd = module->blend_data;
   if(bd)
   {
@@ -3440,6 +3469,7 @@ void dt_masks_set_edit_mode_forms(dt_iop_module_t *module,
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
                                    value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
   }
+#endif
 
   dt_control_queue_redraw_center();
 }
@@ -4557,6 +4587,7 @@ static void _masks_set_line_color(cairo_t *cr, const double alpha)
 
 static void _masks_set_edge_color(cairo_t *cr, const double alpha)
 {
+#ifndef DT_NO_GUI
   const double amt = 0.5 + darktable.gui->overlay_contrast * 0.5;
   const double lum = amt * (0.2126 * darktable.gui->overlay_red
                             + 0.7152 * darktable.gui->overlay_green
@@ -4565,6 +4596,10 @@ static void _masks_set_edge_color(cairo_t *cr, const double alpha)
   // the overlay contrast setting sets how far the two tones stand apart
   cairo_set_source_rgba(cr, edge, edge, edge,
                         alpha * (0.4 + 0.5 * darktable.gui->overlay_contrast));
+#else
+  // round the white lines of the stand-in overlay color (common/nogui_types.h)
+  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, alpha * 0.4);
+#endif
 }
 
 void dt_masks_draw_anchor(cairo_t *cr,

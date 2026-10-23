@@ -321,12 +321,6 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
   return button;
 }
 
-gboolean dt_mask_scroll_increases(int up)
-{
-  const gboolean mask_down = dt_conf_get_bool("masks_scroll_down_increases");
-  return up ? !mask_down : mask_down;
-}
-
 GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self)
 {
   static const dt_introspection_type_enum_tuple_t interpolation_names[]

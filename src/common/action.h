@@ -59,6 +59,28 @@ typedef struct dt_action_t
   struct dt_action_t *next;
 } dt_action_t;
 
+// the action tree, apart from gui/accelerators.h so that the core can name
+// and run actions without GTK. gui/accelerators.c defines these
+G_BEGIN_DECLS
+
+float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
+
+void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
+
+dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create);
+
+static inline dt_action_t *dt_action_section(dt_action_t *owner, const gchar *section)
+{
+  return dt_action_locate(owner, (gchar **)(const gchar *[]){section, NULL}, TRUE);
+}
+
+void dt_action_define_preset(dt_action_t *action, const gchar *name);
+// rename or remove (new_name == NULL) actions or presets
+void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name);
+void dt_action_rename(dt_action_t *action, const gchar *new_name);
+
+G_END_DECLS
+
 #define DT_ACTION(p) (p?(dt_action_t*)&p->actions:NULL)
 
 enum

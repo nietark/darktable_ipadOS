@@ -21,14 +21,10 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 #include "develop/pixelpipe_hb.h"
-#include "dtgtk/paint.h"
-#include "gui/gtk.h"
-#include "views/view.h"
 #ifdef HAVE_AI
 #include "common/ai/segmentation.h"
 #include "common/ai_models.h"
@@ -40,6 +36,12 @@
 #include <limits.h>
 #include <math.h>
 #include <string.h>
+#ifndef DT_NO_GUI
+#include "develop/blend_gui.h"
+#include "dtgtk/paint.h"
+#include "gui/gtk.h"
+#include "views/view.h"
+#endif
 
 // --- creation: the AI tool, only where AI is compiled in ---
 
@@ -2153,6 +2155,7 @@ static void _object_events_post_expose(cairo_t *cr,
 
 }
 
+#ifndef DT_NO_GUI
 static GSList *_object_events_setup_mouse_actions
   (const struct dt_masks_form_t *const form)
 {
@@ -2198,6 +2201,7 @@ static GSList *_object_events_setup_mouse_actions
     _("[OBJECT] change opacity"));
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _object_events_set_hint_message(const dt_masks_form_gui_t *const gui,
                                             const dt_masks_form_t *const form,
@@ -2440,7 +2444,9 @@ static gboolean _object_fallback_anchor(const dt_masks_form_t *form,
 
 // the stored mask's side, shared with the other pixel forms (pixel_mask.c)
 static const dt_masks_pixel_type_t _object_pixel_type = {
+#ifndef DT_NO_GUI
   .icon = dtgtk_cairo_paint_masks_object,
+#endif
   .fallback_anchor = _object_fallback_anchor,
   .edit_action = N_("[OBJECT] edit shape"),
   .opacity_action = N_("[OBJECT] change opacity"),
@@ -2452,6 +2458,7 @@ static void _object_set_form_name(dt_masks_form_t *const form,
   snprintf(form->name, sizeof(form->name), _("ai object #%d"), (int)nb);
 }
 
+#ifndef DT_NO_GUI
 static GSList *_object_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
 #ifdef HAVE_AI
@@ -2460,6 +2467,7 @@ static GSList *_object_setup_mouse_actions(const struct dt_masks_form_t *const f
 #endif
   return dt_masks_pixel_setup_mouse_actions(&_object_pixel_type);
 }
+#endif // DT_NO_GUI
 
 static void _object_set_hint_message(const dt_masks_form_gui_t *const gui,
                                      const dt_masks_form_t *const form,
@@ -2593,7 +2601,9 @@ static int _object_get_points_border(dt_develop_t *dev,
 const dt_masks_functions_t dt_masks_functions_object = {
   .point_struct_size = sizeof(struct dt_masks_point_object_t),
   .sanitize_config = NULL,
+#ifndef DT_NO_GUI
   .setup_mouse_actions = _object_setup_mouse_actions,
+#endif
   .set_hint_message = _object_set_hint_message,
 #ifdef HAVE_AI
   .modify_property = _object_modify_property,

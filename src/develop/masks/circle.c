@@ -16,17 +16,19 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
 #include "views/view.h"
+#endif
 
 #define MIN_CIRCLE_RADIUS 0.0005f
 #define MIN_CIRCLE_BORDER 0.0005f
@@ -368,12 +370,14 @@ static int _circle_events_button_pressed(dt_iop_module_t *module,
     {
       if(crea_module)
       {
+#ifndef DT_NO_GUI
         dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
           if(bd->masks_type[n] == form->type)
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+#endif
         dt_masks_form_t *newform = dt_masks_create(form->type);
         dt_masks_change_form_gui(newform);
         darktable.develop->form_gui->creation_module = crea_module;
@@ -1369,6 +1373,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   return 1;
 }
 
+#ifndef DT_NO_GUI
 static GSList *_circle_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
@@ -1380,6 +1385,7 @@ static GSList *_circle_setup_mouse_actions(const struct dt_masks_form_t *const f
                                      DT_MODIFIER_CONTROL, _("[CIRCLE] change opacity"));
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _circle_sanitize_config(dt_masks_type_t type)
 {
@@ -1489,7 +1495,9 @@ static void _circle_initial_source_pos(const float iwd,
 const dt_masks_functions_t dt_masks_functions_circle = {
   .point_struct_size = sizeof(struct dt_masks_point_circle_t),
   .sanitize_config = _circle_sanitize_config,
+#ifndef DT_NO_GUI
   .setup_mouse_actions = _circle_setup_mouse_actions,
+#endif
   .set_form_name = _circle_set_form_name,
   .set_hint_message = _circle_set_hint_message,
   .modify_property = _circle_modify_property,

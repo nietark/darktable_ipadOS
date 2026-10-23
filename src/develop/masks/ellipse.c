@@ -16,18 +16,20 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/undo.h"
 #include "common/math.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
 #include "views/view.h"
+#endif
 
 static inline int _nb_ctrl_point(void)
 {
@@ -762,12 +764,14 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     {
       if(crea_module)
       {
+#ifndef DT_NO_GUI
         const dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
           if(bd->masks_type[n] == form->type)
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+#endif
         dt_masks_form_t *newform = dt_masks_create(form->type);
         dt_masks_change_form_gui(newform);
         darktable.develop->form_gui->creation_module = crea_module;
@@ -1992,6 +1996,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   return 1;
 }
 
+#ifndef DT_NO_GUI
 static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
@@ -2019,6 +2024,7 @@ static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const 
                                      _("[ELLIPSE] rotate shape and source together"));
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _ellipse_set_form_name(dt_masks_form_t *const form,
                                    const size_t nb)
@@ -2204,7 +2210,9 @@ static void _ellipse_modify_property(dt_masks_form_t *const form,
 const dt_masks_functions_t dt_masks_functions_ellipse = {
   .point_struct_size = sizeof(struct dt_masks_point_ellipse_t),
   .sanitize_config = _ellipse_sanitize_config,
+#ifndef DT_NO_GUI
   .setup_mouse_actions = _ellipse_setup_mouse_actions,
+#endif
   .set_form_name = _ellipse_set_form_name,
   .set_hint_message = _ellipse_set_hint_message,
   .modify_property = _ellipse_modify_property,

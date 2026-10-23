@@ -17,15 +17,19 @@
 */
 
 #include "common/metadata.h"
+#include "common/act_on.h"
 #include "common/debug.h"
 #include "common/collection.h"
 #include "common/undo.h"
 #include "common/grouping.h"
+#include "common/image.h"
 #include "control/conf.h"
-#include "views/view.h"
 #include "control/signal.h"
 
 #include <stdlib.h>
+#ifndef DT_NO_GUI
+#include "views/view.h"
+#endif
 
 static GList *_metadata_list = NULL;
 

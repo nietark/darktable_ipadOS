@@ -5355,6 +5355,69 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   return result.result == RESULT_YES;
 }
 
+dt_gui_database_choice_t dt_gui_database_corrupt_dialog(const char *filename,
+                                                        const char *quick_check_text,
+                                                        const gboolean has_snapshot)
+{
+  GtkWidget *dialog;
+  GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+  const char* label_options = NULL;
+
+  if(has_snapshot)
+  {
+    dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                         NULL,
+                                         dflags,
+                                         _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                         _("_attempt restore"), GTK_RESPONSE_ACCEPT,
+                                         _("_delete database"), GTK_RESPONSE_REJECT,
+                                         NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+    label_options = _("do you want to close darktable now to manually restore\n"
+                      "the database from a backup, attempt an automatic restore\n"
+                      "from the most recent snapshot or delete the corrupted database\n"
+                      "and start with a new one?");
+  }
+  else
+  {
+    dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                         NULL,
+                                         dflags,
+                                         _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                         _("_delete database"), GTK_RESPONSE_REJECT,
+                                         NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
+    label_options = _("do you want to close darktable now to manually restore\n"
+                      "the database from a backup or delete the corrupted database\n"
+                      "and start with a new one?");
+  }
+
+  char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
+                                               "\n"
+                                               "<span style='italic'>%s</span>\n"
+                                               "\n"
+                                               "it seems that the database is corrupted.\n"
+                                               "%s"
+                                               "%s"),
+                                             filename, quick_check_text, label_options);
+
+  GtkWidget *label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), label_text);
+  g_free(label_text);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label);
+
+  gtk_widget_show_all(dialog);
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  gtk_widget_destroy(dialog);
+
+  return resp == GTK_RESPONSE_ACCEPT ? DT_GUI_DATABASE_RESTORE
+       : resp == GTK_RESPONSE_REJECT ? DT_GUI_DATABASE_DELETE
+       : DT_GUI_DATABASE_CLOSE;
+}
+
 char *dt_gui_show_standalone_string_dialog(const char *title,
                                            const char *markup,
                                            const char *placeholder,

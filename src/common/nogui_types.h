@@ -21,10 +21,12 @@
 // stand-ins for the GTK types that core structs hold, for a build without GTK
 // (DT_NO_GUI). Those structs keep their widgets next to state that processing
 // reads, so they have to compile there; nothing in such a build touches the
-// widgets or the colors
+// widgets or the colors. Also the screen scaling and overlay color of the
+// GUI, which canvas drawing and hit tests use
 
 #ifdef DT_NO_GUI
 
+#include <cairo.h>
 #include <glib.h>
 
 typedef struct _GtkWidget GtkWidget;
@@ -37,6 +39,18 @@ typedef struct _GdkRGBA
   gdouble blue;
   gdouble alpha;
 } GdkRGBA;
+
+// a build without a screen draws at one pixel per pixel
+#define DT_PIXEL_APPLY_DPI(value) (value)
+
+// gui/draw.h's overlay color, in white or black for want of the preference
+static inline void dt_draw_set_color_overlay(cairo_t *cr,
+                                             const gboolean bright,
+                                             const double alpha)
+{
+  const double v = bright ? 1.0 : 0.0;
+  cairo_set_source_rgba(cr, v, v, v, alpha);
+}
 
 #endif // DT_NO_GUI
 

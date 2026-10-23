@@ -40,7 +40,9 @@ void dt_ratings_apply_on_list(const GList *list,
                               const int rating,
                               const gboolean undo_on);
 
+#ifndef DT_NO_GUI
 extern const struct dt_action_def_t dt_action_def_rating;
+#endif
 
 G_END_DECLS
 
