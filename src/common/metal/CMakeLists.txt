@@ -46,7 +46,7 @@ if(BUILD_METAL_EMULATOR)
     "${CMAKE_SOURCE_DIR}/src/common" "${CMAKE_SOURCE_DIR}/src/external/OpenCL")
   target_compile_definitions(darktable_metal_emu PRIVATE DTCL_EMULATOR)
   target_compile_options(darktable_metal_emu PRIVATE ${DTCL_C_FLAGS}
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++17 -Wno-unknown-attributes -Wno-unused-function -Wno-unused-variable>)
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++17 -Wno-unknown-attributes -Wno-unused-function -Wno-unused-variable -Wno-shadow>)
   if(OpenMP_FOUND)
     target_link_libraries(darktable_metal_emu PRIVATE OpenMP::OpenMP_CXX)
   endif()

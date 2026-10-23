@@ -61,6 +61,29 @@ using namespace metal;
 #define as_int(v) as_type<int>(v)
 #define as_float(v) as_type<float>(v)
 
+// OpenCL's vloadN/vstoreN on float pointers; a template, so one
+// definition serves every address space
+template <typename P> static inline float2 vload2(const size_t i, P p)
+{
+  return float2(p[2 * i], p[2 * i + 1]);
+}
+template <typename P> static inline float4 vload4(const size_t i, P p)
+{
+  return float4(p[4 * i], p[4 * i + 1], p[4 * i + 2], p[4 * i + 3]);
+}
+template <typename P> static inline void vstore2(const float2 v, const size_t i, P p)
+{
+  p[2 * i] = v.x;
+  p[2 * i + 1] = v.y;
+}
+template <typename P> static inline void vstore4(const float4 v, const size_t i, P p)
+{
+  p[4 * i] = v.x;
+  p[4 * i + 1] = v.y;
+  p[4 * i + 2] = v.z;
+  p[4 * i + 3] = v.w;
+}
+
 // metal has no cbrt, log1p, expm1 or hypot that is guaranteed to be precise
 static inline float dt_cbrt(const float x)
 {

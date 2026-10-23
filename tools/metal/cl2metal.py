@@ -154,14 +154,14 @@ def convert_signature(name, params, body):
         elem = 'uint' if re.search(r'read_imageui\s*\(\s*' + var + r'\b', body) else 'float'
         sig.append('texture2d<%s, access::read> %s [[texture(%d)]]' % (elem, var, i))
       continue
-    # pointer to array: global const float (*const a)[3]
-    m = re.match(r'(?:__)?(global|constant)\s+(.*?)\(\s*\*\s*(?:const\s+)?(\w+)\s*\)\s*\[(\d+)\]$', a)
+    # pointer to array: global const float (*const a)[3], [3][8] or none
+    m = re.match(r'(?:__)?(global|constant)\s+(.*?)\(\s*\*\s*(?:const\s+)?(\w+)\s*\)\s*((?:\[\d+\])*)$', a)
     if m:
       space, base, var, n = m.groups()
       space = 'device' if space == 'global' else 'constant'
       base = body_subst(base).strip()
       sig.append('%s %s *%s_flat [[buffer(%d)]]' % (space, base, var, i))
-      prelude.append('  %s %s (*const %s)[%s] = (%s %s (*)[%s])%s_flat;'
+      prelude.append('  %s %s (*const %s)%s = (%s %s (*)%s)%s_flat;'
                      % (space, base, var, n, space, base, n, var))
       continue
     m = re.match(r'(?:__)?(global|constant|local)\s+(.*?)\s*\*\s*(?:const\s+)?(?:restrict\s+)?(\w+)$', a)

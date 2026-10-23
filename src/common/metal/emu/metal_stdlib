@@ -34,6 +34,7 @@
 #pragma once
 
 #include <cfloat>
+#include <climits>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -353,7 +354,16 @@ inline void threadgroup_barrier(const mem_flags flags) { dtcl_emu_barrier(); }
 #define make_uint2(...) metal::make_vec<uint2>(__VA_ARGS__)
 #define make_uint3(...) metal::make_vec<uint3>(__VA_ARGS__)
 #define make_uint4(...) metal::make_vec<uint4>(__VA_ARGS__)
+#define make_uchar2(...) metal::make_vec<uchar2>(__VA_ARGS__)
+#define make_uchar3(...) metal::make_vec<uchar3>(__VA_ARGS__)
 #define make_uchar4(...) metal::make_vec<uchar4>(__VA_ARGS__)
+#define make_char2(...) metal::make_vec<char2>(__VA_ARGS__)
+#define make_char3(...) metal::make_vec<char3>(__VA_ARGS__)
+#define make_char4(...) metal::make_vec<char4>(__VA_ARGS__)
+#define make_short2(...) metal::make_vec<short2>(__VA_ARGS__)
+#define make_short4(...) metal::make_vec<short4>(__VA_ARGS__)
+#define make_ushort2(...) metal::make_vec<ushort2>(__VA_ARGS__)
+#define make_ushort4(...) metal::make_vec<ushort4>(__VA_ARGS__)
 
 // Metal's address spaces and function qualifiers mean nothing on the CPU.
 // DTCL_EMU_STRICT maps them to clang address spaces instead, for a

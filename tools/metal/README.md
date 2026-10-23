@@ -39,9 +39,8 @@ The ports are compiled with `-fno-fast-math`, and the runtime with
 | channelmixer.cl | channelmixerrgb_CAT16 |
 | sigmoid.cl | sigmoid_loglogistic_per_channel |
 | colorspaces.cl | colorspaces_transform_lab_to_rgb_matrix, colorspaces_transform_rgb_matrix_to_lab |
-
-X-Trans demosaicing (Markesteijn) is not ported; X-Trans raws run that
-one module on the CPU.
+| demosaic_markesteijn.cl | all 17 kernels (Markesteijn 1 and 3 pass X-Trans demosaic) |
+| demosaic_vng.cl | vng_lin_interpolate, vng_interpolate, clip_and_zoom_demosaic_third_size_xtrans |
 
 ## A separate dev build
 
