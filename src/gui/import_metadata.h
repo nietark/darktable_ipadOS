@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <gtk/gtk.h>
+
 typedef struct dt_import_metadata_t
 {
   GtkWidget *box;   // widget where to put the metadata widgets

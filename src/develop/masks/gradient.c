@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/math.h"
 #include "common/undo.h"
@@ -26,6 +25,11 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
+#include "views/view.h"
+#endif
 
 static inline int _nb_ctrl_point(void)
 {
@@ -119,7 +123,7 @@ static int _gradient_events_mouse_scrolled(dt_iop_module_t *module,
 {
   if(gui->creation)
   {
-    if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       float compression =
         MIN(1.0f, dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression)));
@@ -154,12 +158,12 @@ static int _gradient_events_mouse_scrolled(dt_iop_module_t *module,
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     }
-    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
+    else if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
     {
       dt_masks_point_gradient_t *gradient = form->points->data;
       if(up)
@@ -203,7 +207,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
 {
   if(!gui) return 0;
 
-  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
+  if(which == DT_BUTTON_PRIMARY && type == DT_BUTTON_DOUBLE_PRESS)
   {
     // double-click resets curvature
     dt_masks_point_gradient_t *gradient = form->points->data;
@@ -216,7 +220,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     return 1;
   }
   else if(!gui->creation
-          && dt_modifier_is(state, GDK_SHIFT_MASK))
+          && dt_modifier_is(state, DT_MODIFIER_SHIFT))
   {
     dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
@@ -234,7 +238,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     // - dragging the pivot handle rotates (legacy gesture)
     // - CTRL+drag anywhere rotates too, matching the rotate convention
     //   used by the other masks (ellipse, path, brush)
-    if(gui->pivot_selected || dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(gui->pivot_selected || dt_modifier_is(state, DT_MODIFIER_CONTROL))
       gui->form_rotating = TRUE;
     else
       gui->form_dragging = TRUE;
@@ -242,7 +246,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
   }
-  else if(gui->creation && (which == GDK_BUTTON_SECONDARY))
+  else if(gui->creation && (which == DT_BUTTON_SECONDARY))
   {
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);
@@ -342,7 +346,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
   float wd, ht;
   dt_masks_get_image_size(&wd, &ht, NULL, NULL);
 
-  if(which == GDK_BUTTON_SECONDARY
+  if(which == DT_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -468,12 +472,14 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     {
       if(crea_module)
       {
+#ifndef DT_NO_GUI
         const dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
           if(bd->masks_type[n] == form->type)
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+#endif
         dt_masks_form_t *newform = dt_masks_create(form->type);
         dt_masks_change_form_gui(newform);
         darktable.develop->form_gui->creation_module = crea_module;
@@ -1378,23 +1384,25 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   return 1;
 }
 
+#ifndef DT_NO_GUI
 static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                      0, _("[GRADIENT on pivot] rotate shape"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_CONTROL_MASK, _("[GRADIENT] rotate shape"));
+                                     DT_MODIFIER_CONTROL, _("[GRADIENT] rotate shape"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,
                                      0, _("[GRADIENT creation] set rotation"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0, _("[GRADIENT] change curvature"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_SHIFT_MASK, _("[GRADIENT] change compression"));
+                                     DT_MODIFIER_SHIFT, _("[GRADIENT] change compression"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_CONTROL_MASK, _("[GRADIENT] change opacity"));
+                                     DT_MODIFIER_CONTROL, _("[GRADIENT] change opacity"));
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _gradient_sanitize_config(const dt_masks_type_t type)
 {
@@ -1512,7 +1520,9 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
 const dt_masks_functions_t dt_masks_functions_gradient = {
   .point_struct_size = sizeof(struct dt_masks_point_gradient_t),
   .sanitize_config = _gradient_sanitize_config,
+#ifndef DT_NO_GUI
   .setup_mouse_actions = _gradient_setup_mouse_actions,
+#endif
   .set_form_name = _gradient_set_form_name,
   .set_hint_message = _gradient_set_hint_message,
   .modify_property = _gradient_modify_property,

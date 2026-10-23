@@ -20,7 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/history.h"
-#include "develop/blend_gui_internal.h"
+#include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"

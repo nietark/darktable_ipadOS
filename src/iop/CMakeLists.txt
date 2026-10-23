@@ -178,5 +178,51 @@ if(APPLE)
   set_target_properties(demosaic PROPERTIES LINKER_LANGUAGE C)
 endif(APPLE)
 
+#
+# processing modules that build without GTK: their GUI code is inside
+# #ifndef DT_NO_GUI. dt_iops_nogtk compiles them with DT_NO_GUI defined and
+# the GTK, GDK, ATK, Pango and librsvg headers off the include path, as
+# dt_core_nogtk does for the core (src/core_nogtk.cmake). Not built by
+# default: cmake --build . --target dt_iops_nogtk
+#
+set(DT_IOPS_NOGTK
+  colorin
+  colorout
+  demosaic
+  demosaicscale
+  exposure
+  finalscale
+  flip
+  gamma
+  highlights
+  mask_manager
+  rawoverexposed
+  rawprepare
+  sigmoid
+)
+if(NOT USE_LUA)
+  set(_srcs)
+  foreach(_iop ${DT_IOPS_NOGTK})
+    get_target_property(_iop_srcs ${_iop} SOURCES)
+    list(APPEND _srcs ${_iop_srcs})
+  endforeach()
+  add_library(dt_iops_nogtk OBJECT EXCLUDE_FROM_ALL ${_srcs})
+  target_compile_definitions(dt_iops_nogtk PRIVATE DT_NO_GUI)
+  get_directory_property(_dirs INCLUDE_DIRECTORIES)
+  list(FILTER _dirs EXCLUDE REGEX "/(gtk-3\\.0|gdk-pixbuf-2\\.0|atk-1\\.0|at-spi[^/]*|pango-1\\.0|harfbuzz|fribidi|librsvg-2\\.0|osmgpsmap-1\\.0|libsoup-[^/]*|colord-1)(/|$)")
+  set_target_properties(dt_iops_nogtk PROPERTIES INCLUDE_DIRECTORIES "${_dirs}")
+  get_target_property(_libs lib_darktable LINK_LIBRARIES)
+  foreach(_lib ${_libs})
+    if(TARGET ${_lib})
+      target_link_libraries(dt_iops_nogtk PRIVATE ${_lib})
+    endif()
+  endforeach()
+  add_dependencies(dt_iops_nogtk lib_darktable)
+  unset(_srcs)
+  unset(_iop_srcs)
+  unset(_dirs)
+  unset(_libs)
+endif()
+
 set_property(GLOBAL PROPERTY DT_PLUGIN_IOPS ${_iop_list})
 set_property(GLOBAL PROPERTY DT_PLUGIN_IOPS_VISIBLE_BY_DEFAULT ${_iop_default_visible_list})

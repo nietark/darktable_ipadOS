@@ -2866,7 +2866,7 @@ int mouse_moved(dt_iop_module_t *self,
       if(grab & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
       if(!grab && darktable.control->button_down_which == 3) g->straightening = 1;
     }
-    if(!g->straightening && darktable.control->button_down_which == GDK_BUTTON_PRIMARY && g->k_show != 1)
+    if(!g->straightening && darktable.control->button_down_which == DT_BUTTON_PRIMARY && g->k_show != 1)
     {
       grab = g->cropping;
 
@@ -3177,13 +3177,13 @@ int button_pressed(dt_iop_module_t *self,
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
-  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
+  if(type == DT_BUTTON_DOUBLE_PRESS && which == DT_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(NULL);
     commit_box(self, g, p);
     return 1;
   }
-  if(which == GDK_BUTTON_SECONDARY || which == GDK_BUTTON_PRIMARY)
+  if(which == DT_BUTTON_SECONDARY || which == DT_BUTTON_PRIMARY)
   {
     // switch module on already, other code depends in this:
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -3313,8 +3313,8 @@ int button_pressed(dt_iop_module_t *self,
       g->prev_clip_h = g->clip_h;
 
       /* if shift is pressed, then lock crop on center */
-      if(dt_modifiers_include(state, GDK_SHIFT_MASK)) g->shift_hold = TRUE;
-      if(dt_modifiers_include(state, GDK_CONTROL_MASK)) g->ctrl_hold = TRUE;
+      if(dt_modifiers_include(state, DT_MODIFIER_SHIFT)) g->shift_hold = TRUE;
+      if(dt_modifiers_include(state, DT_MODIFIER_CONTROL)) g->ctrl_hold = TRUE;
     }
 
     return 1;

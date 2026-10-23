@@ -37,6 +37,7 @@
 #include "common/pfm.h"
 #include "common/ras2vect.h"
 #include "common/utility.h"
+#include "dtgtk/button.h"
 #include "imageio/imageio_png.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"

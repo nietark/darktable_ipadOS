@@ -28,6 +28,9 @@
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
+#ifndef DT_NO_GUI
+#include "gui/gtk.h"
+#endif
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
@@ -1708,6 +1711,8 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
   return found;
 }
 
+#ifndef DT_NO_GUI
+// the preview is a surface for the screen, at its pixel density
 typedef struct _imageio_preview_t
 {
   dt_imageio_module_data_t head;
@@ -1799,6 +1804,7 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
 
   return surface;
 }
+#endif // DT_NO_GUI
 
 void dt_imageio_pq_light_level(const float *const rgba,
                                const size_t npixels,

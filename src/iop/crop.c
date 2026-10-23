@@ -29,6 +29,7 @@
 #include "develop/imageop_gui.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -1756,7 +1757,7 @@ int mouse_moved(dt_iop_module_t *self,
 
   _set_max_clip(self);
 
-  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
+  if(darktable.control->button_down && darktable.control->button_down_which == DT_BUTTON_PRIMARY)
   {
     // draw a light gray frame, to show it's not stored yet:
     // first mouse button, adjust cropping frame, but what do we do?
@@ -1950,10 +1951,10 @@ int button_pressed(dt_iop_module_t *self,
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
-  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
+  if(type == DT_BUTTON_DOUBLE_PRESS && which == DT_BUTTON_PRIMARY)
     return 1;
 
-  if(which == GDK_BUTTON_PRIMARY)
+  if(which == DT_BUTTON_PRIMARY)
   {
     float wd, ht;
     dt_dev_get_preview_size(self->dev, &wd, &ht);
@@ -1972,8 +1973,8 @@ int button_pressed(dt_iop_module_t *self,
     g->prev_clip_h = g->clip_h;
 
     /* if shift is pressed, then lock crop on center */
-    if(dt_modifiers_include(state, GDK_SHIFT_MASK)) g->shift_hold = TRUE;
-    if(dt_modifiers_include(state, GDK_CONTROL_MASK)) g->ctrl_hold = TRUE;
+    if(dt_modifiers_include(state, DT_MODIFIER_SHIFT)) g->shift_hold = TRUE;
+    if(dt_modifiers_include(state, DT_MODIFIER_CONTROL)) g->ctrl_hold = TRUE;
 
     /* store grabbed area */
 
@@ -1995,7 +1996,7 @@ int button_pressed(dt_iop_module_t *self,
 
     return 1;
   }
-  else if(which == GDK_BUTTON_SECONDARY)
+  else if(which == DT_BUTTON_SECONDARY)
   {
     // we reset cropping
     g->clip_x = 0.0f;

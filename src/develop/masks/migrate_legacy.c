@@ -42,6 +42,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "develop/blend.h"
+#include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
@@ -490,8 +491,8 @@ static GList *_build_channel_forms(dt_iop_module_t *module,
                                    const float *const blendif_parameters,
                                    const float *const blendif_boost_factors)
 {
-  const dt_iop_gui_blendif_channel_t *channels =
-    dt_develop_blendif_channels_for_csp((int)blend_cst);
+  const dt_develop_blendif_slot_t *channels =
+    dt_develop_blendif_slots_for_csp((int)blend_cst);
   int nch = 0;
   if(channels)
     while(channels[nch].label) nch++;

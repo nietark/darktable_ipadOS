@@ -21,7 +21,6 @@
 #include "common/dtpthread.h"
 
 #include <glib.h>
-#include <gtk/gtk.h>
 #include <inttypes.h>
 
 G_BEGIN_DECLS
@@ -83,7 +82,8 @@ void dt_conf_set_float(const char *name, const float val);
 void dt_conf_set_bool(const char *name, const int val);
 void dt_conf_set_string(const char *name, const char *val);
 void dt_conf_set_path(const char *name, const char *val);
-void dt_conf_set_folder_from_file_chooser(const char *name, GtkFileChooser *chooser);
+struct _GtkFileChooser;
+void dt_conf_set_folder_from_file_chooser(const char *name, struct _GtkFileChooser *chooser);
 int dt_conf_get_int(const char *name);
 int64_t dt_conf_get_int64(const char *name);
 float dt_conf_get_float(const char *name);
@@ -103,7 +103,7 @@ const char *dt_conf_get_string_const(const char *name);
 // to use even if calling dt_conf_set_string
 gchar *dt_conf_get_string(const char *name);
 gchar *dt_conf_get_path(const char *name);
-gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser);
+gboolean dt_conf_get_folder_to_file_chooser(const char *name, struct _GtkFileChooser *chooser);
 gboolean dt_conf_is_equal(const char *name, const char *value);
 void dt_conf_init(dt_conf_t *cf,
                   const char *filename,

@@ -29,8 +29,6 @@
 #include "common/tags.h"
 #include "control/control.h"
 #include "develop/develop.h"
-#include "gui/accelerators.h"
-#include "gui/styles.h"
 #include "imageio/imageio_common.h"
 
 #include <libxml/encoding.h>
@@ -41,6 +39,10 @@
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
+#ifndef DT_NO_GUI
+#include "gui/accelerators.h"
+#include "gui/styles.h"
+#endif
 
 #if defined (_WIN32)
 #include "win/getdelim.h"
@@ -102,6 +104,7 @@ void dt_style_item_free(gpointer data)
   free(item);
 }
 
+#ifndef DT_NO_GUI
 static void _apply_style_shortcut_callback(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
@@ -118,6 +121,7 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
     dt_control_apply_styles(imgs, styles, FALSE);
   }
 }
+#endif // DT_NO_GUI
 
 static int32_t dt_styles_get_id_by_name(const char *name);
 
@@ -305,10 +309,12 @@ static gboolean dt_styles_create_style_header(const char *name,
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+#ifndef DT_NO_GUI
   dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
   dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
 
   dt_gui_style_content_dialog("", -1);
+#endif
 
   g_free(iop_list_txt);
   return TRUE;
@@ -660,7 +666,9 @@ void dt_styles_update(const char *name,
     dt_action_rename(old, newname);
   }
 
+#ifndef DT_NO_GUI
   dt_gui_style_content_dialog("", -1);
+#endif
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
 
@@ -860,6 +868,8 @@ gboolean dt_styles_create_from_image(const char *name,
 
 void dt_styles_create_from_list(const GList *list)
 {
+  // each image opens the dialog that names the style
+#ifndef DT_NO_GUI
   gboolean selected = FALSE;
   /* for each image create style */
   for(const GList *l = list; l; l = g_list_next(l))
@@ -871,6 +881,7 @@ void dt_styles_create_from_list(const GList *list)
   }
 
   if(!selected) dt_control_log(_("no image selected!"));
+#endif
 }
 
 void dt_styles_apply_style_item(dt_develop_t *dev,
@@ -1920,6 +1931,8 @@ static int32_t dt_styles_get_id_by_name(const char *name)
 
 void dt_init_styles_actions()
 {
+  // the shortcuts that apply a style
+#ifndef DT_NO_GUI
   GList *result = dt_styles_get_list("");
   if(result)
   {
@@ -1931,6 +1944,7 @@ void dt_init_styles_actions()
     }
     g_list_free_full(result, dt_style_free);
   }
+#endif
 }
 
 dt_style_t *dt_styles_get_by_name(const char *name)

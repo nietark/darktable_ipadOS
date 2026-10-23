@@ -25,6 +25,7 @@
 #include "libs/colorpicker.h"
 #include "scopes.h"
 #include "scopes/vectorscope.h"
+#include "dtgtk/togglebutton.h"
 
 // # of gradations between each primary/secondary to draw the hue ring
 // this is tuned to most degenerate cases: curve to blue primary in

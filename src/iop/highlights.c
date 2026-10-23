@@ -16,13 +16,11 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <gtk/gtk.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "bauhaus/bauhaus.h"
 #include "common/bilinear.h"
 #include "common/box_filters.h"
 #include "common/bspline.h"
@@ -30,20 +28,29 @@
 #include "common/imagebuf.h"
 #include "common/fast_guided_filter.h"
 #include "common/distance_transform.h"
+#include "common/gaussian.h"
 #include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
-#include "develop/imageop_gui.h"
 #include "develop/noise_generator.h"
 #include "develop/tiling.h"
 #include "develop/masks.h"
+
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
 
 // Downsampling factor for guided-laplacian
+
+#include <gtk/gtk.h>
+#endif
+
 #define DS_FACTOR 4
 #define MAX_NUM_SCALES 12
 
@@ -1090,6 +1097,7 @@ void commit_params(dt_iop_module_t *self,
   }
 }
 
+#ifndef DT_NO_GUI
 static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = self->gui_data;
@@ -1116,6 +1124,7 @@ static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
   DT_LEAVE_GUI_UPDATE();
   dt_dev_add_history_item(darktable.develop, self, FALSE);
 }
+#endif // DT_NO_GUI
 
 void init_global(dt_iop_module_so_t *self)
 {
@@ -1180,6 +1189,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
+#ifndef DT_NO_GUI
 static void _set_quads(dt_iop_highlights_gui_data_t *g, GtkWidget *w)
 {
   g->hlr_mask_mode = w && dt_bauhaus_widget_get_quad_active(w)
@@ -1267,6 +1277,7 @@ void gui_update(dt_iop_module_t *self)
 
   gui_changed(self, NULL, NULL);
 }
+#endif // DT_NO_GUI
 
 void reload_defaults(dt_iop_module_t *self)
 {
@@ -1276,22 +1287,24 @@ void reload_defaults(dt_iop_module_t *self)
   const dt_image_t *img = &self->dev->image_storage;
   const gboolean monochrome = dt_image_is_monochrome(img);
   const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
-  const uint32_t filters = img->buf_dsc.filters;
   const gboolean rawprep = dt_image_is_rawprepare_supported(img);
-  const gboolean sraw = rawprep && (filters == 0);
-  const gboolean xtrans = rawprep && (filters == 9u);
 
   // enable this per default if raw or sraw if not real monochrome
   self->default_enabled = rawprep && !monochrome;
   self->hide_enable_button = monochrome;
 
+  dt_iop_highlights_params_t *d = self->default_params;
+#ifndef DT_NO_GUI
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
 
-  dt_iop_highlights_params_t *d = self->default_params;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(self->dev->gui_attached && g)
   {
+    const uint32_t filters = img->buf_dsc.filters;
+    const gboolean sraw = rawprep && (filters == 0);
+    const gboolean xtrans = rawprep && (filters == 9u);
+
     // rebuild the complete menu depending on sensor type and possibly active but obsolete mode
     dt_bauhaus_combobox_clear(g->mode);
 
@@ -1326,10 +1339,12 @@ void reload_defaults(dt_iop_module_t *self)
    _set_quads(g, NULL);
     dt_iop_gui_leave_critical_section(self);
   }
+#endif
   d->clip = MIN(d->clip, img->linear_response_limit);
   d->mode = rawprep && !is_4bayer ? DT_IOP_HIGHLIGHTS_OPPOSED : DT_IOP_HIGHLIGHTS_CLIP;
 }
 
+#ifndef DT_NO_GUI
 static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   DT_GUARD_GUI_UPDATE();
@@ -1433,6 +1448,7 @@ void gui_init(dt_iop_module_t *self)
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_done);
 }
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

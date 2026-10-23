@@ -33,6 +33,12 @@
 
 #include <lcms2.h>
 #include <strings.h>
+#ifndef DT_NO_GUI
+#include "gui/gtk.h"
+#else
+// colord-gtk finds the display's profile through GTK, so it goes with the GUI
+#undef USE_COLORDGTK
+#endif
 
 #ifdef USE_COLORDGTK
 #include "colord-gtk.h"

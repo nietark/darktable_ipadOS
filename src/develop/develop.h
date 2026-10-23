@@ -114,14 +114,15 @@ typedef struct dt_dev_proxy_exposure_t
   float (*get_exposure)(struct dt_iop_module_t *exp);
   float (*get_effective_exposure)(struct dt_iop_module_t *exp);
   float (*get_black)(struct dt_iop_module_t *exp);
-  void (*handle_event)(int, gdouble, GdkModifierType, const gboolean);
+  // state is a GdkModifierType, kept as guint so this header needs no gdk.h
+  void (*handle_event)(int, gdouble, guint, const gboolean);
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
 struct dt_develop_t;
 typedef struct dt_dev_viewport_t
 {
-  GtkWidget *widget; // TODO (#18559): remove gtk stuff from here
+  struct _GtkWidget *widget; // TODO (#18559): remove gtk stuff from here
   int32_t orig_width, orig_height;
 
   // dimensions of window
@@ -161,7 +162,7 @@ typedef struct dt_dev_viewport_t
   struct dt_dev_pixelpipe_t *pipe;
   
   // Pin button for the second window
-  GtkWidget *pin_button;
+  struct _GtkWidget *pin_button;
   
   // Back-pointer to the owning develop structure
   struct dt_develop_t *dev;
@@ -318,7 +319,7 @@ typedef struct dt_develop_t
                                gchar *module);
       /* add or remove module or widget in current quick access list */
       gboolean (*basics_module_toggle)(struct dt_lib_module_t *self,
-                                       GtkWidget *widget,
+                                       struct _GtkWidget *widget,
                                        const gboolean doit);
     } modulegroups;
 
@@ -330,14 +331,14 @@ typedef struct dt_develop_t
     {
       struct dt_lib_module_t *module;
       // where flexi content gets reparented into; owned by the lib
-      GtkBox *content_box;
+      struct _GtkBox *content_box;
       // where the hosted module's mask on/off toggle goes, last on the lib
       // header; owned by the lib
-      GtkBox *toggle_box;
+      struct _GtkBox *toggle_box;
       // stand-in for that toggle while no module is focused, in toggle_box:
       // always insensitive, shown only then (see
       // dt_masks_gui_utility_header_unhosted); owned by the lib
-      GtkWidget *idle_toggle;
+      struct _GtkWidget *idle_toggle;
       // the module whose panel is in content_box, NULL if none, for
       // dt_iop_gui_blend_masks_panel_relocate to move out first
       struct dt_iop_module_t *hosted_module;
@@ -351,7 +352,7 @@ typedef struct dt_develop_t
   // the darkroom toolbar toggle that shows or hides the masks panel, owned by
   // views/darkroom.c, for masks_gui_panel_host.c to show the panel's state on
   // (dt_iop_gui_blend_masks_panel_sync_toolbox)
-  GtkWidget *masks_panel_button;
+  struct _GtkWidget *masks_panel_button;
 
   dt_dev_chroma_t chroma;
 
@@ -370,7 +371,7 @@ typedef struct dt_develop_t
   // for the overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
+    struct _GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
 
     gboolean enabled;
     dt_dev_overexposed_colorscheme_t colorscheme;
@@ -382,7 +383,7 @@ typedef struct dt_develop_t
   // for the raw overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
+    struct _GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
 
     gboolean enabled;
     dt_dev_rawoverexposed_mode_t mode;
@@ -393,24 +394,24 @@ typedef struct dt_develop_t
   // Color assessment conditions
   struct
   {
-    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
+    struct _GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
   } color_assessment;
 
   // late scaling down from full roi
   struct
   {
-    GtkWidget *button; // TODO (#18559): remove gtk stuff from here
+    struct _GtkWidget *button; // TODO (#18559): remove gtk stuff from here
     gboolean enabled;
   } late_scaling;
 
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
   {
-    GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
-    GtkWidget *display_intent_widget, *display2_intent_widget;    // TODO (#18559): remove gtk stuff from here
+    struct _GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
+    struct _GtkWidget *display_intent_widget, *display2_intent_widget;    // TODO (#18559): remove gtk stuff from here
   } profile;
 
-  GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
+  struct _GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
 
   // several views of the same image
   dt_dev_viewport_t full, preview2;
@@ -579,7 +580,7 @@ float dt_dev_exposure_get_effective_exposure(dt_develop_t *dev);
 float dt_dev_exposure_get_black(dt_develop_t *dev);
 
 void dt_dev_exposure_handle_event(int n_press, gdouble delta,
-                                  GdkModifierType state,
+                                  guint state,
                                   const gboolean is_blackpoint);
 
 /*
@@ -609,7 +610,7 @@ gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev,
                                         gchar *module);
 /** add or remove module or widget in current quick access list **/
 int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev,
-                                             GtkWidget *widget,
+                                             struct _GtkWidget *widget,
                                              const gboolean doit);
 
 /*

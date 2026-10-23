@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/act_on.h"
 #include "common/tags.h"
 #include "common/darktable.h"
 #include "common/debug.h"

@@ -25,10 +25,13 @@
 #include "common/grouping.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "gui/hooks.h"
+#ifndef DT_NO_GUI
+#include <gdk/gdkkeysyms.h>
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
-#include <gdk/gdkkeysyms.h>
 #include "bauhaus/bauhaus.h"
+#endif
 
 const char *dt_colorlabels_name[] = {
   "red", "yellow", "green", "blue", "purple",
@@ -319,6 +322,8 @@ const char *dt_colorlabels_to_string(int label)
   return dt_colorlabels_name[label];
 }
 
+// the color label shortcuts
+#ifndef DT_NO_GUI
 static float _action_process_color_label(gpointer target,
                                          const dt_action_element_t element,
                                          const dt_action_effect_t effect,
@@ -389,6 +394,7 @@ const dt_action_def_t dt_action_def_color_label
   = { N_("color label"),
       _action_process_color_label,
       _action_elements_color_label };
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

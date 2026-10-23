@@ -18,6 +18,7 @@
 #include "common/gdk_event_utils.h"
 
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/blend_gui_internal.h"
 #include "bauhaus/bauhaus.h"
 #include "common/database.h"
@@ -3505,8 +3506,9 @@ const dt_iop_gui_blendif_channel_t rgbj_channels[]
 
 // the channel descriptor array for a blend colorspace (NULL-terminated), used
 // by the parametric elements (add buttons, row editors) to enumerate and index
-// channels. Exported (see blend.h) so parametric.c can name a form after its
-// channel without duplicating the per-colorspace arrays above
+// channels. Processing reads the labels and slots from
+// dt_develop_blendif_slots_for_csp() in blend.c instead, so the arrays above
+// must keep its channels and order
 const dt_iop_gui_blendif_channel_t *dt_develop_blendif_channels_for_csp(const int csp)
 {
   switch(csp)

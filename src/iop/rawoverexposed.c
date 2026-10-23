@@ -29,7 +29,6 @@
 #include "develop/tiling.h"
 #include "iop/iop_api.h"          // for dt_iop_params_t
 #include <glib/gi18n.h>           // for _
-#include <gtk/gtktypes.h>         // for GtkWidget
 #include <stdint.h>               // for uint16_t, uint8_t, uint32_t
 #include <stdlib.h>               // for size_t, free, NULL, calloc, malloc
 #include <string.h>               // for memcpy

@@ -18,15 +18,9 @@
 
 #pragma once
 
+#include "common/styles.h"
+
 #include <cairo.h>
-
-/** extract the style's name from the XML in the given file */
-/** returns NULL if the contents are not valid XML or do not name the style */
-gchar *dt_get_style_name(const char *filename);
-
-/** import styles stored in the shared directory if they are not
- * already in our database */
-void dt_import_default_styles(const char *sharedir);
 
 /** shows a dialog for creating a new style, return FALSE if cancel
  * button clicked */

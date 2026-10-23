@@ -42,6 +42,7 @@
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_module.h"
 
+#include <gtk/gtk.h>
 #include <inttypes.h>
 #include <libintl.h>
 #include <sys/time.h>

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <glib.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 #include "develop/imageop.h"
@@ -62,7 +62,7 @@ typedef enum dt_history_copy_mode_t
 typedef struct dt_history_copy_item_t
 {
   GList *selops;
-  GtkTreeView *items;
+  struct _GtkTreeView *items;
   dt_imgid_t copied_imageid;
   gboolean full_copy; // bypass some IOP flags like IOP_FLAGS_UNSAFE_COPY
                       // and IOP_FLAGS_HIDDEN, this is used for duplicate images.
@@ -105,12 +105,14 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
                                     const gboolean undo,
                                     const gboolean init_history);
 
+#ifndef DT_NO_GUI
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
 gboolean dt_history_copy(const dt_imgid_t imgid);
 gboolean dt_history_copy_parts(const dt_imgid_t imgid);
 gboolean dt_history_paste(const dt_imgid_t imgid,
                           const gboolean merge,
                           const gboolean paste); // requires prior setup of copied history
+#endif
 
 static inline gboolean dt_history_module_skip_copy(const int flags)
 {

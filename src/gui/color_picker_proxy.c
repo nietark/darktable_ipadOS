@@ -24,6 +24,8 @@
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
+#include "dtgtk/togglebutton.h"
 
 /*
   The color_picker_proxy code is an interface which links the UI

@@ -20,13 +20,12 @@
 
 #include "common/darktable.h"
 #include "common/dtdata.h"
+#include "common/input.h"
 #include "common/opencl.h"
 #include "develop/pixelpipe.h"
-#include "dtgtk/button.h"
-#include "dtgtk/gradientslider.h"
-#include "gui/gtk.h"
 
 #include <assert.h>
+#include <cairo.h>
 
 #define DEVELOP_MASKS_VERSION (7)
 
@@ -693,7 +692,7 @@ gboolean dt_masks_object_cancel_edit(void);
 typedef struct dt_masks_pixel_type_t
 {
   // drawn on the icon at the mask's anchor
-  DTGTKCairoPaintIconFunc icon;
+  void (*icon)(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
   // where the icon goes, input-image normalized, when the stored mask gives
   // no place: it is missing or has no interior. FALSE when there is none
   gboolean (*fallback_anchor)(const dt_masks_form_t *form, float anchor[2]);
@@ -1876,10 +1875,11 @@ void dt_masks_stroke_polyline(cairo_t *cr,
                               const gboolean selected,
                               const float zoom_scale);
 
-static inline float dt_masks_sensitive_dist(const float zoom_scale)
-{
-  return DT_PIXEL_APPLY_DPI(7) / zoom_scale;
-}
+// the hit-test radius of shapes and handles, in image pixels at this zoom
+float dt_masks_sensitive_dist(const float zoom_scale);
+
+/* returns up or !up depending on the masks_updown preference */
+gboolean dt_mask_scroll_increases(int up);
 
 static inline void dt_masks_get_image_size(float *width,
                                            float *height,

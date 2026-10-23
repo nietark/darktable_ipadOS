@@ -24,7 +24,6 @@
 #include "common/introspection.h"
 
 #include <cairo/cairo.h>
-#include <gtk/gtk.h>
 #include <glib.h>
 #include <stdint.h>
 
@@ -135,7 +134,7 @@ OPTIONAL(void, color_picker_apply, struct dt_iop_module_t *self,
                                    struct dt_dev_pixelpipe_t *pipe);
 /** called by standard widget callbacks after value changed */
 OPTIONAL(void, gui_changed, struct dt_iop_module_t *self,
-                            GtkWidget *widget,
+                            struct _GtkWidget *widget,
                             void *previous);
 /** destroy widget. */
 OPTIONAL(void, gui_cleanup, struct dt_iop_module_t *self);

@@ -23,6 +23,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "dtgtk/button.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"

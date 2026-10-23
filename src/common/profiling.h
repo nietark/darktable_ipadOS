@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "gui/gtk.h"
+#include <glib.h>
 
 
 #ifdef USE_DARKTABLE_PROFILING

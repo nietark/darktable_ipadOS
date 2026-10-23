@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
@@ -30,14 +28,20 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "gui/presets.h"
+#include "imageio/imageio_common.h"
+#include "iop/iop_api.h"
+
+#ifndef DT_NO_GUI
 #include "develop/imageop_gui.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
-#include "gui/presets.h"
-#include "imageio/imageio_common.h"
-#include "iop/iop_api.h"
+
+#include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#endif
 
 DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)
 
@@ -508,6 +512,7 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
+#ifndef DT_NO_GUI
 static void _crop_callback(dt_iop_module_t *self,
                            const dt_image_orientation_t mode)
 {
@@ -623,6 +628,7 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   self->gui_data = NULL;
 }
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

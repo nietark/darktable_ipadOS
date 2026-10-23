@@ -101,6 +101,7 @@ FILE(GLOB SOURCE_FILES
   "common/undo.c"
   "common/usermanual_url.c"
   "common/utility.c"
+  "common/utility_svg.c"
   "common/variables.c"
   "common/wb_presets.c"
   "control/conf.c"
@@ -1337,3 +1338,38 @@ add_custom_target(
   DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
+#
+# the GTK-free part of the core, see core_nogtk.cmake. Not built by
+# default: cmake --build . --target dt_core_nogtk
+# The Lua bindings still name GTK types (lua/types.h) and are included by
+# core headers, so the target needs a build without Lua.
+#
+if(NOT USE_LUA)
+  include(core_nogtk.cmake)
+  set(DT_CORE_NOGTK_BUILD_SOURCES)
+  foreach(_src ${DT_CORE_NOGTK_SOURCES})
+    # the globbed sources are absolute paths, the optional ones relative
+    if(_src IN_LIST SOURCES OR "${CMAKE_CURRENT_SOURCE_DIR}/${_src}" IN_LIST SOURCES)
+      list(APPEND DT_CORE_NOGTK_BUILD_SOURCES ${_src})
+    endif()
+  endforeach()
+  add_library(dt_core_nogtk OBJECT EXCLUDE_FROM_ALL ${DT_CORE_NOGTK_BUILD_SOURCES})
+  # leaves out the GUI parts of the files (see common/nogui_types.h)
+  target_compile_definitions(dt_core_nogtk PRIVATE DT_NO_GUI)
+  get_directory_property(_dirs INCLUDE_DIRECTORIES)
+  list(FILTER _dirs EXCLUDE REGEX "/(gtk-3\\.0|gdk-pixbuf-2\\.0|atk-1\\.0|at-spi[^/]*|pango-1\\.0|harfbuzz|fribidi|librsvg-2\\.0|osmgpsmap-1\\.0|libsoup-[^/]*|colord-1)(/|$)")
+  set_target_properties(dt_core_nogtk PROPERTIES INCLUDE_DIRECTORIES "${_dirs}")
+  # the include directories that lib_darktable gets from the imported targets it
+  # links (OpenEXR, LibRaw, ...)
+  get_target_property(_libs lib_darktable LINK_LIBRARIES)
+  foreach(_lib ${_libs})
+    if(TARGET ${_lib})
+      target_link_libraries(dt_core_nogtk PRIVATE ${_lib})
+    endif()
+  endforeach()
+  # the generated headers (preferences_gen.h, conf_gen.h, ...) come with lib_darktable
+  add_dependencies(dt_core_nogtk lib_darktable)
+  unset(_dirs)
+  unset(_libs)
+endif()

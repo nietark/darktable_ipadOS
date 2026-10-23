@@ -19,7 +19,6 @@
 #pragma once
 
 #include "common/darktable.h"
-#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -62,7 +61,9 @@ const char *dt_colorlabels_to_string(int label);
 gboolean dt_colorlabels_check_label(const dt_imgid_t imgid,
                                     const int color);
 
+#ifndef DT_NO_GUI
 extern const struct dt_action_def_t dt_action_def_color_label;
+#endif
 
 G_END_DECLS
 

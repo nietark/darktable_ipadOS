@@ -45,6 +45,7 @@
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/paint.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"

@@ -25,14 +25,16 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/pixelpipe_hb.h"
-#include "gui/draw.h"
-#include "gui/gtk.h"
 #include "imageio/imageio_common.h"
-#include "views/view.h"
 
 #include <errno.h>
 #include <math.h>
 #include <string.h>
+#ifndef DT_NO_GUI
+#include "gui/draw.h"
+#include "gui/gtk.h"
+#include "views/view.h"
+#endif
 
 // --- the stored mask: compiled in every build, AI or not ---
 
@@ -801,7 +803,7 @@ int dt_masks_pixel_mouse_scrolled(dt_iop_module_t *module,
                                   dt_masks_form_gui_t *gui,
                                   const int index)
 {
-  if(gui && gui->form_selected && dt_modifier_is(state, GDK_CONTROL_MASK))
+  if(gui && gui->form_selected && dt_modifier_is(state, DT_MODIFIER_CONTROL))
   {
     dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
     return 1;
@@ -817,7 +819,7 @@ int dt_masks_pixel_button_released(dt_iop_module_t *module,
                                    const dt_mask_id_t parentid,
                                    dt_masks_form_gui_t *gui)
 {
-  if(!(gui && which == GDK_BUTTON_SECONDARY && gui->form_selected
+  if(!(gui && which == DT_BUTTON_SECONDARY && gui->form_selected
        && dt_is_valid_maskid(parentid) && gui->edit_mode == DT_MASKS_EDIT_FULL))
     return 0;
 
@@ -1069,6 +1071,7 @@ void dt_masks_pixel_post_expose(const dt_masks_pixel_type_t *type,
 // what a click and a scroll on the icon do, not the tool's actions, which a
 // committed object does not implement. dt_masks_mouse_actions adds the
 // right-click that removes it, as for every shape
+#ifndef DT_NO_GUI
 GSList *dt_masks_pixel_setup_mouse_actions(const dt_masks_pixel_type_t *type)
 {
   GSList *lm = NULL;
@@ -1082,10 +1085,11 @@ GSList *dt_masks_pixel_setup_mouse_actions(const dt_masks_pixel_type_t *type)
   lm = dt_mouse_action_create_simple(
     lm,
     DT_MOUSE_ACTION_SCROLL,
-    GDK_CONTROL_MASK,
+    DT_MODIFIER_CONTROL,
     _(type->opacity_action));
   return lm;
 }
+#endif // DT_NO_GUI
 
 // only reached over the icon: the group hands the hint to the form its
 // get_distance reported a hit for, and that is the icon alone

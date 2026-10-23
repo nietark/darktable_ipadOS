@@ -34,6 +34,7 @@
 
 #include "control/conf.h"
 #include "control/control.h"
+#include "gui/hooks.h"
 
 #include <gio/gio.h>
 #include <glib.h>
@@ -4513,69 +4514,16 @@ start:
 
       gchar *data_snap = dt_database_get_most_recent_snap(dbfilename_data);
 
-      GtkWidget *dialog;
-      GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
-
-      const char* label_options = NULL;
-
-      if(data_snap)
-      {
-        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
-                                            NULL,
-                                            dflags,
-                                            _("_close darktable"), GTK_RESPONSE_CLOSE,
-                                            _("_attempt restore"), GTK_RESPONSE_ACCEPT,
-                                            _("_delete database"), GTK_RESPONSE_REJECT,
-                                            NULL);
-        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
-        label_options = _("do you want to close darktable now to manually restore\n"
-                          "the database from a backup, attempt an automatic restore\n"
-                          "from the most recent snapshot or delete the corrupted database\n"
-                          "and start with a new one?");
-      }
-      else
-      {
-        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
-                                            NULL,
-                                            dflags,
-                                            _("_close darktable"), GTK_RESPONSE_CLOSE,
-                                            _("_delete database"), GTK_RESPONSE_REJECT,
-                                            NULL);
-        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
-        label_options = _("do you want to close darktable now to manually restore\n"
-                          "the database from a backup or delete the corrupted database\n"
-                          "and start with a new one?");
-      }
-
-
-
-      char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
-                                                   "\n"
-                                                   "<span style='italic'>%s</span>\n"
-                                                   "\n"
-                                                   "it seems that the database is corrupted.\n"
-                                                   "%s"
-                                                   "%s"),
-                                                 dbfilename_data, quick_check_text, label_options);
+      const dt_gui_database_choice_t resp =
+        dt_gui_database_corrupt_dialog(dbfilename_data, quick_check_text, data_snap != NULL);
 
       g_free(quick_check_text);
       g_free(data_status);
 
-      GtkWidget *label = gtk_label_new(NULL);
-      gtk_label_set_markup(GTK_LABEL(label), label_text);
-      g_free(label_text);
-      dt_gui_dialog_add(GTK_DIALOG(dialog), label);
-
-      gtk_widget_show_all(dialog);
-
-      const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
-
-      gtk_widget_destroy(dialog);
-
       dt_database_destroy(db);
       db = NULL;
 
-      if(resp != GTK_RESPONSE_ACCEPT && resp != GTK_RESPONSE_REJECT)
+      if(resp != DT_GUI_DATABASE_RESTORE && resp != DT_GUI_DATABASE_DELETE)
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
@@ -4590,7 +4538,7 @@ start:
                dbfilename_data,
                g_unlink(dbfilename_data) == 0 ? "ok" : "failed" );
 
-      if(resp == GTK_RESPONSE_ACCEPT && data_snap)
+      if(resp == DT_GUI_DATABASE_RESTORE && data_snap)
       {
         GError *gerror = NULL;
         if(!g_file_test(dbfilename_data, G_FILE_TEST_EXISTS))
@@ -4687,67 +4635,16 @@ start:
 
     gchar *data_snap = dt_database_get_most_recent_snap(dbfilename_library);
 
-    GtkWidget *dialog;
-    GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
-
-    const char* label_options = NULL;
-
-    if(data_snap)
-    {
-      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
-                                          NULL,
-                                          dflags,
-                                          _("_close darktable"), GTK_RESPONSE_CLOSE,
-                                          _("_attempt restore"), GTK_RESPONSE_ACCEPT,
-                                          _("_delete database"), GTK_RESPONSE_REJECT,
-                                          NULL);
-      gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
-      label_options = _("do you want to close darktable now to manually restore\n"
-                        "the database from a backup, attempt an automatic restore\n"
-                        "from the most recent snapshot or delete the corrupted database\n"
-                        "and start with a new one?");
-    }
-    else
-    {
-      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
-                                          NULL,
-                                          dflags,
-                                          _("_close darktable"), GTK_RESPONSE_CLOSE,
-                                          _("_delete database"), GTK_RESPONSE_REJECT,
-                                          NULL);
-      gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
-      label_options = _("do you want to close darktable now to manually restore\n"
-                        "the database from a backup or delete the corrupted database\n"
-                        "and start with a new one?");
-    }
-
-    char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
-                                                 "\n"
-                                                 "<span style='italic'>%s</span>\n"
-                                                 "\n"
-                                                 "it seems that the database is corrupted.\n"
-                                                 "%s"
-                                                 "%s"),
-                                               dbfilename_library, quick_check_text, label_options);
+    const dt_gui_database_choice_t resp =
+      dt_gui_database_corrupt_dialog(dbfilename_library, quick_check_text, data_snap != NULL);
 
     g_free(quick_check_text);
     g_free(libdb_status);
 
-    GtkWidget *label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(label), label_text);
-    g_free(label_text);
-    dt_gui_dialog_add(GTK_DIALOG(dialog), label);
-
-    gtk_widget_show_all(dialog);
-
-    const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    gtk_widget_destroy(dialog);
-
     dt_database_destroy(db);
     db = NULL;
 
-    if(resp != GTK_RESPONSE_ACCEPT && resp != GTK_RESPONSE_REJECT)
+    if(resp != DT_GUI_DATABASE_RESTORE && resp != DT_GUI_DATABASE_DELETE)
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
@@ -4762,7 +4659,7 @@ start:
     dt_print(DT_DEBUG_ALWAYS, "[init] deleting `%s' on user request ...%s",
       dbfilename_library, g_unlink(dbfilename_library) == 0 ? "OK" : "failed");
 
-    if(resp == GTK_RESPONSE_ACCEPT && data_snap)
+    if(resp == DT_GUI_DATABASE_RESTORE && data_snap)
     {
       GError *gerror = NULL;
       if(!g_file_test(dbfilename_library, G_FILE_TEST_EXISTS))

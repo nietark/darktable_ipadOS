@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <locale.h>
+#ifndef DT_NO_GUI
+#include "views/view.h"
+#endif
 
 typedef enum _camctl_camera_job_type_t
 {
@@ -1459,6 +1462,8 @@ GList *dt_camctl_get_images_list(const dt_camctl_t *c,
   return imgs;
 }
 
+// the import dialog's thumbnails
+#ifndef DT_NO_GUI
 static GdkPixbuf *_camctl_get_thumbnail(const dt_camctl_t *c,
                                         dt_camera_t *cam,
                                         const char *filename)
@@ -1580,6 +1585,7 @@ GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c,
   _camctl_unlock(c);
   return thumb;
 }
+#endif // DT_NO_GUI
 
 int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c,
                                     const dt_camera_t *cam)
@@ -1747,7 +1753,9 @@ void dt_camctl_camera_build_property_menu(const dt_camctl_t *c,
   dt_pthread_mutex_lock(&camera->config_lock);
   *menu = g_menu_new();
   _camera_build_property_menu(camera->configuration, *menu, item_activate, user_data);
+#ifndef DT_NO_GUI
   gtk_widget_show_all(GTK_WIDGET(*menu));
+#endif
   dt_pthread_mutex_unlock(&camera->config_lock);
 }
 

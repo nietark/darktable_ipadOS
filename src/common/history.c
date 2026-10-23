@@ -33,8 +33,11 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/masks.h"
-#include "gui/hist_dialog.h"
 #include "imageio/imageio_common.h"
+#ifndef DT_NO_GUI
+#include "gui/hist_dialog.h"
+#include "views/view.h"
+#endif
 
 void dt_history_item_free(gpointer data)
 {
@@ -2166,6 +2169,8 @@ dt_history_hash_t dt_history_hash_get_status(const dt_imgid_t imgid)
   return status;
 }
 
+// the copy and paste clipboard is the GUI's (darktable.view_manager->copy_paste)
+#ifndef DT_NO_GUI
 gboolean dt_history_copy(const dt_imgid_t imgid)
 {
   // note that this routine does not copy anything, it just setup the
@@ -2229,6 +2234,7 @@ gboolean dt_history_paste(const dt_imgid_t imgid,
   // indicate whether caller needs to ensure that the sidecar is synched
   return !sync && res;
 }
+#endif // DT_NO_GUI
 
 gboolean dt_history_delete(const dt_imgid_t imgid,
                            const gboolean undo)

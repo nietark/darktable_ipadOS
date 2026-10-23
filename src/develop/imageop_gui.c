@@ -20,6 +20,7 @@
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/button.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "common/curve_tools.h"
 
@@ -318,12 +319,6 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
   if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 
   return button;
-}
-
-gboolean dt_mask_scroll_increases(int up)
-{
-  const gboolean mask_down = dt_conf_get_bool("masks_scroll_down_increases");
-  return up ? !mask_down : mask_down;
 }
 
 GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self)

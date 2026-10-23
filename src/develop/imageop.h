@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include <cairo.h>
 #include <gmodule.h>
-#include <gtk/gtk.h>
 #include <sched.h>
 #include <stdint.h>
 
@@ -27,6 +27,8 @@
 #include "common/introspection.h"
 #include "common/opencl.h"
 #include "common/action.h"
+#include "common/input.h"
+#include "common/nogui_types.h"
 #include "control/settings.h"
 
 #if defined(__aarch64__)
@@ -34,7 +36,10 @@
 #endif
 
 #include "develop/pixelpipe.h"
-#include "dtgtk/togglebutton.h"
+
+// gui types, so that this header does not need gtk.h
+struct _GtkWidget;
+struct _GdkEventCrossing;
 
 #if defined(__SSE__)
 #include <xmmintrin.h> // needed for _mm_stream_ps
@@ -254,26 +259,26 @@ typedef struct dt_iop_module_t
     } sink;
   } raster_mask;
   /** child widget which is added to the GtkExpander. copied from module_so_t. */
-  GtkWidget *widget;
+  struct _GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
-  GtkWidget *off;
+  struct _GtkWidget *off;
   /** this is the module header, contains label and buttons */
-  GtkWidget *header;
-  GtkWidget *label;
-  GtkWidget *instance_name;
+  struct _GtkWidget *header;
+  struct _GtkWidget *label;
+  struct _GtkWidget *instance_name;
   /** this is the module mask indicator, inside header */
-  GtkWidget *mask_indicator;
+  struct _GtkWidget *mask_indicator;
   /** shown in the header while the mask is locked, click to unlock */
-  GtkWidget *mask_lock_indicator;
+  struct _GtkWidget *mask_lock_indicator;
   /** expander containing the widget and flag to store expanded state */
-  GtkWidget *expander;
+  struct _GtkWidget *expander;
   gboolean expanded;
   /** reset parameters button */
-  GtkWidget *reset_button;
+  struct _GtkWidget *reset_button;
   /** show preset menu button */
-  GtkWidget *presets_button;
+  struct _GtkWidget *presets_button;
   /** fusion slider */
-  GtkWidget *fusion_slider;
+  struct _GtkWidget *fusion_slider;
 
   /* list of instance widgets and associated actions. Bauhaus with
    * field pointer at end, starting from widget_list_bh */
@@ -281,8 +286,8 @@ typedef struct dt_iop_module_t
   GSList *widget_list_bh;
 
   /** show/hide guide button and combobox */
-  GtkWidget *guides_toggle;
-  GtkWidget *guides_combo;
+  struct _GtkWidget *guides_toggle;
+  struct _GtkWidget *guides_combo;
 
   /** flag in case the module has troubles (bad settings) - if TRUE,
    * show a warning sign next to module label */
@@ -294,7 +299,7 @@ typedef struct dt_iop_module_t
   int multi_priority; // user may change this
   char multi_name[128]; // user may change this name
   gboolean multi_name_hand_edited;
-  GtkWidget *multimenu_button;
+  struct _GtkWidget *multimenu_button;
 
   void (*process_plain)(struct dt_iop_module_t *self,
                         struct dt_dev_pixelpipe_iop_t *piece,
@@ -402,14 +407,16 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 void dt_iop_gui_set_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
-GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
+struct _GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
 /** get the eventbox of plugin ui in expander */
-GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
+struct _GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
 /** create one of the header buttons */
-GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
-                                    DTGTKCairoPaintIconFunc paint,
+struct _GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
+                                    void (*paint)(cairo_t *cr, gint x, gint y,
+                                                  gint w, gint h, gint flags,
+                                                  void *data),
                                     dt_action_element_t element,
-                                    GtkWidget *header);
+                                    struct _GtkWidget *header);
 
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
@@ -564,7 +571,7 @@ void dt_iop_refresh_all(const dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
-                                         GdkEventCrossing *event,
+                                         struct _GdkEventCrossing *event,
                                          gboolean show_buttons,
                                          const gboolean always_hide);
 
@@ -624,7 +631,7 @@ gboolean dt_iop_canvas_not_sensitive(const struct dt_develop_t *dev);
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action,
-                        GtkWidget *widget,
+                        struct _GtkWidget *widget,
                         gpointer data);
 
 gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev,

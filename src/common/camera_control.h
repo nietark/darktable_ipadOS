@@ -29,7 +29,6 @@
 #endif
 #endif //defined (_WIN32)
 #include <gphoto2/gphoto2.h>
-#include <gtk/gtk.h>
 
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t
@@ -298,7 +297,7 @@ time_t dt_camctl_get_image_file_timestamp(const dt_camctl_t *c, const char *in_p
 /** return the list of images from camera */
 GList *dt_camctl_get_images_list(const dt_camctl_t *c, dt_camera_t *cam);
 /** return the thumbnail of a camera image */
-GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c, dt_camera_t *cam, const gchar *filename);
+struct _GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c, dt_camera_t *cam, const gchar *filename);
 /** Execute remote capture of camera.*/
 void dt_camctl_camera_capture(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Start live view of camera.*/

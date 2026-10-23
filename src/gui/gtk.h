@@ -21,12 +21,17 @@
 #include "common/atomic.h"
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "common/input.h"
 #include "dtgtk/paint.h"
+#include "gui/hooks.h"
+#include "gui/theme_colors.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
 
 G_BEGIN_DECLS
+
+extern GdkModifierType dt_modifier_shortcuts;
 
 #define DT_GUI_THUMBSIZE_REDUCE 0.7f
 
@@ -57,50 +62,6 @@ typedef struct dt_gui_scrollbars_t
 
     gboolean visible;
 } dt_gui_scrollbars_t;
-
-typedef enum dt_gui_color_t
-{
-  DT_GUI_COLOR_BG = 0,
-  DT_GUI_COLOR_DARKROOM_BG,
-  DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
-  DT_GUI_COLOR_LIGHTTABLE_BG,
-  DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
-  DT_GUI_COLOR_LIGHTTABLE_FONT,
-  DT_GUI_COLOR_PRINT_BG,
-  DT_GUI_COLOR_BRUSH_CURSOR,
-  DT_GUI_COLOR_BRUSH_TRACE,
-  DT_GUI_COLOR_BUTTON_FG,
-  DT_GUI_COLOR_THUMBNAIL_BG,
-  DT_GUI_COLOR_THUMBNAIL_SELECTED_BG,
-  DT_GUI_COLOR_THUMBNAIL_HOVER_BG,
-  DT_GUI_COLOR_THUMBNAIL_OUTLINE,
-  DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE,
-  DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE,
-  DT_GUI_COLOR_THUMBNAIL_FONT,
-  DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT,
-  DT_GUI_COLOR_THUMBNAIL_HOVER_FONT,
-  DT_GUI_COLOR_THUMBNAIL_BORDER,
-  DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER,
-  DT_GUI_COLOR_FILMSTRIP_BG,
-  DT_GUI_COLOR_TIMELINE_BG,
-  DT_GUI_COLOR_TIMELINE_FG,
-  DT_GUI_COLOR_TIMELINE_TEXT_BG,
-  DT_GUI_COLOR_TIMELINE_TEXT_FG,
-  DT_GUI_COLOR_CULLING_SELECTED_BORDER,
-  DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER,
-  DT_GUI_COLOR_PREVIEW_HOVER_BORDER,
-  DT_GUI_COLOR_LOG_BG,
-  DT_GUI_COLOR_LOG_FG,
-  DT_GUI_COLOR_MAP_COUNT_SAME_LOC,
-  DT_GUI_COLOR_MAP_COUNT_DIFF_LOC,
-  DT_GUI_COLOR_MAP_COUNT_BG,
-  DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH,
-  DT_GUI_COLOR_MAP_LOC_SHAPE_LOW,
-  DT_GUI_COLOR_MAP_LOC_SHAPE_DEF,
-  DT_GUI_COLOR_COLOR_ASSESSMENT_BG,
-  DT_GUI_COLOR_COLOR_ASSESSMENT_FG,
-  DT_GUI_COLOR_LAST
-} dt_gui_color_t;
 
 typedef enum dt_gui_session_type_t
 {
@@ -214,13 +175,9 @@ int dt_gui_theme_init(dt_gui_gtk_t *gui);
 int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
-void dt_gui_gtk_quit();
 void dt_gui_store_last_preset(const char *name);
 int dt_gui_gtk_load_config();
 int dt_gui_gtk_write_config();
-void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t color);
-void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t color,
-                                const float opacity_coef);
 double dt_get_system_gui_ppd(GtkWidget *widget);
 double dt_get_screen_resolution(GtkWidget *widget);
 
@@ -438,8 +395,6 @@ void dt_ui_update_scrollbars(struct dt_ui_t *ui);
 void dt_ui_scrollbars_show(struct dt_ui_t *ui, const gboolean show);
 /** \brief toggle view of panels eg. collapse/expands to previous view state */
 void dt_ui_toggle_panels_visibility(const struct dt_ui_t *ui);
-/** \brief draw user's attention */
-void dt_ui_notify_user();
 /** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(const struct dt_ui_t *ui,
                              const dt_ui_panel_t);
@@ -553,14 +508,6 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook,
                                const char *text,
                                const char *tooltip);
 
-// show a dialog box with 2 buttons in case some user interaction is
-// required BEFORE dt's gui is initialised.  this expects gtk_init()
-// to be called already which should be the case during most of dt's
-// init phase.
-gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
-                                              const char *markup,
-                                              const char *no_text,
-                                              const char *yes_text);
 
 // similar to the one above. this one asks the user for some
 // string. the hint is shown in the empty entry box
@@ -569,11 +516,6 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
                                            const char *placeholder,
                                            const char *no_text,
                                            const char *yes_text);
-
-// returns TRUE if YES was answered, FALSE otherwise
-gboolean dt_gui_show_yes_no_dialog(const char *title,
-                                   const char *wname,
-                                   const char *format, ...);
 
 void dt_gui_add_help_link(GtkWidget *widget,
                           const char *link);
@@ -904,16 +846,6 @@ static inline GdkModifierType dt_gui_current_state(GtkGestureSingle *gesture)
 // GTK4 gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 #define dt_modifier_eq(controller, mask)\
   dt_modifier_is(dt_key_modifier_state(), mask)
-
-// control whether the mouse pointer displays as a "busy" cursor, e.g. watch or timer
-// the calls may be nested, but must be matched
-void dt_gui_cursor_set_busy();
-void dt_gui_cursor_clear_busy();
-
-// run all pending Gtk/GDK events
-// should be called after making Gtk calls if we won't resume the main event loop for a while
-// (i.e. the current function will do a lot of work before returning)
-void dt_gui_process_events();
 
 #ifdef __cplusplus
 extern "C++"

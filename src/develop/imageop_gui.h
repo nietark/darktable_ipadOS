@@ -19,6 +19,7 @@
 #pragma once
 
 #include "develop/imageop.h"
+#include "dtgtk/paint.h"
 
 G_BEGIN_DECLS
 
@@ -52,9 +53,6 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
 GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
                              GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
                              DTGTKCairoPaintIconFunc paint, gint paintflags, GtkWidget *box);
-
-/* returns up or !up depending on the masks_updown preference */
-gboolean dt_mask_scroll_increases(int up);
 
 GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self);
 

@@ -33,6 +33,7 @@
 #include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
 #include "dtgtk/drawingarea.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"

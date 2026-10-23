@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <glib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 

@@ -21,9 +21,10 @@
 #include "common/darktable.h"
 #include "common/dtpthread.h"
 #include "common/action.h"
+#include "common/atomic.h"
 #include "control/settings.h"
 
-#include <gtk/gtk.h>
+#include <cairo.h>
 #include <inttypes.h>
 #ifdef _OPENMP
 #include <omp.h>
@@ -32,8 +33,6 @@
 #include "control/jobs.h"
 #include "control/crawler.h"
 #include "control/progress.h"
-#include "libs/lib.h"
-#include <gtk/gtk.h>
 
 #ifdef _WIN32
 #include <shobjidl.h>
@@ -42,16 +41,20 @@
 G_BEGIN_DECLS
 
 struct dt_lib_backgroundjob_element_t;
+struct dt_lib_module_t;
+struct dt_view_t;
+struct _GtkWidget;
+struct _GdkEventConfigure;
 
 // called from gui
-void dt_control_expose(GtkWidget *widget, cairo_t *cr);
-gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data);
+void dt_control_expose(struct _GtkWidget *widget, cairo_t *cr);
+gboolean dt_control_draw_endmarker(struct _GtkWidget *widget, cairo_t *crf, gpointer user_data);
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, double pressure, int which);
 void dt_control_mouse_leave(void);
 void dt_control_mouse_enter(void);
-gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
+gboolean dt_control_configure(struct _GtkWidget *da, struct _GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_ack_all(void);
 GList *dt_control_log_history_get_entries(void);
@@ -74,7 +77,7 @@ void dt_control_change_cursor(const char *cursor_name);
 /** Log cursor ownership/lifecycle state when -d input is enabled. */
 void dt_control_cursor_debug(const char *owner,
                             const char *action,
-                            GtkWidget *widget,
+                            struct _GtkWidget *widget,
                             const char *cursor_name);
 void dt_control_write_sidecar_files(void);
 void dt_control_delete_images(void);
@@ -96,7 +99,7 @@ void dt_control_queue_redraw_center(void);
     Use this function if you need to redraw a specific widget
     if your current thread context is not gtk main thread.
 */
-void dt_control_queue_redraw_widget(GtkWidget *widget);
+void dt_control_queue_redraw_widget(struct _GtkWidget *widget);
 
 /** \brief request redraw of the navigation widget.
     This redraws the wiget of the navigation module.
@@ -105,9 +108,9 @@ void dt_control_navigation_redraw(void);
 
 void dt_ctl_switch_mode(void);
 void dt_ctl_switch_mode_to(const char *mode);
-void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
+void dt_ctl_switch_mode_to_by_view(const struct dt_view_t *view);
 /* Rebuild an existing view without changing the selected mode. */
-void dt_ctl_reload_view(const dt_view_t *view);
+void dt_ctl_reload_view(const struct dt_view_t *view);
 
 struct dt_control_t;
 
@@ -146,7 +149,7 @@ typedef struct dt_control_t
 
   GSequence *shortcuts;
   gboolean enable_fallbacks;
-  GtkWidget *mapping_widget;
+  struct _GtkWidget *mapping_widget;
   gboolean confirm_mapping;
   dt_action_element_t element;
   GPtrArray *widget_definitions;
@@ -219,13 +222,13 @@ typedef struct dt_control_t
     // these proxy functions should ONLY be used by control/process.c!
     struct
     {
-      dt_lib_module_t *module;
-      void *(*added)(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message);
-      void (*destroyed)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance);
-      void (*cancellable)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
+      struct dt_lib_module_t *module;
+      void *(*added)(struct dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message);
+      void (*destroyed)(struct dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance);
+      void (*cancellable)(struct dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
                           dt_progress_t *progress);
-      void (*updated)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance, double value);
-      void (*message_updated)(dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
+      void (*updated)(struct dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance, double value);
+      void (*message_updated)(struct dt_lib_module_t *self, struct dt_lib_backgroundjob_element_t *instance,
                               const char *message);
     } proxy;
 
@@ -237,8 +240,8 @@ typedef struct dt_control_t
 
     struct
     {
-      dt_lib_module_t *module;
-      void (*set_message)(dt_lib_module_t *self, const gchar *message);
+      struct dt_lib_module_t *module;
+      void (*set_message)(struct dt_lib_module_t *self, const gchar *message);
     } hinter;
 
   } proxy;

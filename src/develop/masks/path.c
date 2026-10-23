@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/imagebuf.h"
 #include "common/ras2vect.h"
@@ -29,6 +28,11 @@
 #include "develop/openmp_maths.h"
 
 #include <assert.h>
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/blend_gui.h"
+#include "views/view.h"
+#endif
 
 // Per-form grow/shrink state. Every grow/shrink (whether from the scroll wheel
 // or the mask-manager slider) is a morph of one fixed `baseline` (the shape when
@@ -3003,7 +3007,7 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(module, form, parentid, up ? 0.05f : -0.05f);
@@ -3011,7 +3015,7 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
     else
     {
       // resize don't care where the mouse is inside a shape
-      if(dt_modifier_is(state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
       {
         float feather_size = 0.0f;
 
@@ -3055,7 +3059,7 @@ static int _path_events_mouse_scrolled(dt_iop_module_t *module,
         dt_toast_log(_("fade-out border: %3.2f%%"),
                      feather_size * 50.0f / g_list_length(form->points));
       }
-      else if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) &&
+      else if(dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT) &&
               gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
         // legacy resize: scale all nodes towards/away from the centroid
@@ -3095,8 +3099,8 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
                                        dt_masks_form_gui_t *gui,
                                        const int index)
 {
-  if(type == GDK_2BUTTON_PRESS
-     || type == GDK_3BUTTON_PRESS)
+  if(type == DT_BUTTON_DOUBLE_PRESS
+     || type == DT_BUTTON_TRIPLE_PRESS)
     return 1;
 
   if(!gui) return 0;
@@ -3111,10 +3115,10 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, path, border)), 0.5f);
 
   if(gui->creation
-     && which == GDK_BUTTON_PRIMARY
+     && which == DT_BUTTON_PRIMARY
      && form->points == NULL
-     && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
-         || dt_modifier_is(state, GDK_SHIFT_MASK)))
+     && (dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT)
+         || dt_modifier_is(state, DT_MODIFIER_SHIFT)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE)
@@ -3123,7 +3127,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     return 1;
   }
   else if(gui->creation
-          && (which == GDK_BUTTON_SECONDARY || gui->creation_closing_form))
+          && (which == DT_BUTTON_SECONDARY || gui->creation_closing_form))
   {
     // we don't want a form with less than 3 points
     if(g_list_shorter_than(form->points, 4))
@@ -3180,12 +3184,14 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
            && !dt_iop_module_is(crea_module, "spots")
            && !dt_iop_module_is(crea_module, "retouch"))
         {
+#ifndef DT_NO_GUI
           dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
           for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
             if(bd->masks_type[n] == form->type)
               gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+#endif
           dt_masks_form_t *newform = dt_masks_create(form->type);
           dt_masks_change_form_gui(newform);
           darktable.develop->form_gui->creation = TRUE;
@@ -3227,7 +3233,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
       dt_control_queue_redraw_center();
     }
   }
-  else if(which == GDK_BUTTON_PRIMARY)
+  else if(which == DT_BUTTON_PRIMARY)
   {
     if(gui->creation)
     {
@@ -3269,7 +3275,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
       form->points = g_list_append(form->points, bzpt);
 
       // if this is a ctrl click, the last created point is a sharp one
-      if(dt_modifier_is(state, GDK_CONTROL_MASK))
+      if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
       {
         dt_masks_point_path_t *bzpt3 = g_list_nth_data(form->points, nb - 1);
         bzpt3->ctrl1[0] = bzpt3->ctrl2[0] = bzpt3->corner[0];
@@ -3288,13 +3294,13 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
       return 1;
     }
     else if((gui->form_selected || gui->source_selected) && gui->edit_mode == DT_MASKS_EDIT_FULL &&
-            dt_modifiers_include(state, GDK_CONTROL_MASK))
+            dt_modifiers_include(state, DT_MODIFIER_CONTROL))
     {
       // Modifier scheme (matches the rotate combo used elsewhere for masks):
       // - CTRL: rotate only the shape under the pointer (source or target)
       // - CTRL+SHIFT: rotate both shapes together about their centroids
       gui->rotate_about_source = FALSE;
-      if(dt_modifiers_include(state, GDK_SHIFT_MASK))
+      if(dt_modifiers_include(state, DT_MODIFIER_SHIFT))
       {
         gui->form_rotating = TRUE;
         gui->counter_rotate_source = FALSE; // joint rotation
@@ -3361,7 +3367,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     {
       // if ctrl is pressed, we change the type of point
       if(gui->point_edited == gui->point_selected
-         && dt_modifier_is(state, GDK_CONTROL_MASK))
+         && dt_modifier_is(state, DT_MODIFIER_CONTROL))
       {
         dt_masks_point_path_t *point
             = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_edited);
@@ -3404,11 +3410,11 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
       gui->feather_dragging = gui->feather_selected;
 
       gui->bezier_mode = DT_MASKS_BEZIER_NONE;
-      if(dt_modifier_is(state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
         gui->bezier_mode = DT_MASKS_BEZIER_SINGLE;
-      else if(dt_modifier_is(state, GDK_CONTROL_MASK))
+      else if(dt_modifier_is(state, DT_MODIFIER_CONTROL))
         gui->bezier_mode = DT_MASKS_BEZIER_SYMMETRIC;
-      else if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+      else if(dt_modifier_is(state, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT))
         gui->bezier_mode = DT_MASKS_BEZIER_SING_SYMM;
 
       dt_masks_point_path_t *point
@@ -3438,7 +3444,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
       // add a node with SHIFT+click on a segment. This used to be CTRL+click,
       // but CTRL is now reserved for the rotate gesture, and SHIFT matches the
       // add-node modifier used by brushes.
-      if(dt_modifier_is(state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
       {
         // we add a new point to the path
         dt_masks_point_path_t *bzpt = malloc(sizeof(dt_masks_point_path_t));
@@ -3479,7 +3485,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     }
     gui->point_edited = -1;
   }
-  else if(which == GDK_BUTTON_SECONDARY && gui->point_selected >= 0)
+  else if(which == DT_BUTTON_SECONDARY && gui->point_selected >= 0)
   {
     // we remove the point (and the entire form if there is too few points)
     if(g_list_shorter_than(form->points, 4))
@@ -3539,7 +3545,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
 
     return 1;
   }
-  else if(which == GDK_BUTTON_SECONDARY && gui->feather_selected >= 0)  // right-click to reset Bézier controls
+  else if(which == DT_BUTTON_SECONDARY && gui->feather_selected >= 0)  // right-click to reset Bézier controls
   {
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_selected);
@@ -3557,7 +3563,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     }
     return 1;
   }
-  else if(which == GDK_BUTTON_SECONDARY
+  else if(which == DT_BUTTON_SECONDARY
           && dt_is_valid_maskid(parentid)
           && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -5312,40 +5318,42 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   return 1;
 }
 
+#ifndef DT_NO_GUI
 static GSList *_path_setup_mouse_actions(const dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0,
                                      _("[PATH creation] add a smooth node"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, DT_MODIFIER_CONTROL,
                                      _("[PATH creation] add a sharp node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,
                                      _("[PATH creation] terminate path creation"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, DT_MODIFIER_CONTROL,
                                      _("[PATH on node] switch between smooth/sharp node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,
                                      _("[PATH on node] remove the node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,
                                      _("[PATH on feather] reset curvature"));
   lm = dt_mouse_action_create_simple(
-    lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, _("[PATH on segment] add node"));
+    lm, DT_MOUSE_ACTION_LEFT, DT_MODIFIER_SHIFT, _("[PATH on segment] add node"));
   lm = dt_mouse_action_create_simple(lm,
                                      DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_CONTROL_MASK,
+                                     DT_MODIFIER_CONTROL,
                                      _("[PATH] rotate shape (source only on a clone source)"));
   lm = dt_mouse_action_create_simple(lm,
                                      DT_MOUSE_ACTION_LEFT_DRAG,
-                                     GDK_SHIFT_MASK | GDK_CONTROL_MASK,
+                                     DT_MODIFIER_SHIFT | DT_MODIFIER_CONTROL,
                                      _("[PATH] rotate shape and source together"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[PATH] grow/shrink"));
   lm = dt_mouse_action_create_simple(
-    lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK | GDK_SHIFT_MASK, _("[PATH] resize"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
+    lm, DT_MOUSE_ACTION_SCROLL, DT_MODIFIER_CONTROL | DT_MODIFIER_SHIFT, _("[PATH] resize"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, DT_MODIFIER_SHIFT,
                                      _("[PATH] change fade-out border"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_CONTROL_MASK, _("[PATH] change opacity"));
+                                     DT_MODIFIER_CONTROL, _("[PATH] change opacity"));
   return lm;
 }
+#endif // DT_NO_GUI
 
 static void _path_sanitize_config(dt_masks_type_t type)
 {
@@ -5598,7 +5606,9 @@ static void _path_modify_property(dt_masks_form_t *const form,
 const dt_masks_functions_t dt_masks_functions_path = {
   .point_struct_size = sizeof(struct dt_masks_point_path_t),
   .sanitize_config = _path_sanitize_config,
+#ifndef DT_NO_GUI
   .setup_mouse_actions = _path_setup_mouse_actions,
+#endif
   .set_form_name = _path_set_form_name,
   .set_hint_message = _path_set_hint_message,
   .modify_property = _path_modify_property,

@@ -173,6 +173,14 @@ void dt_styles_save_to_file(const char *style_name,
 /** load style from file */
 void dt_styles_import_from_file(const char *style_path);
 
+/** extract the style's name from the XML in the given file */
+/** returns NULL if the contents are not valid XML or do not name the style */
+gchar *dt_get_style_name(const char *filename);
+
+/** import styles stored in the shared directory if they are not
+ * already in our database */
+void dt_import_default_styles(const char *sharedir);
+
 /** register style actions for shortcuts at start time */
 void dt_init_styles_actions();
 

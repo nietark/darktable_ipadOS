@@ -18,7 +18,12 @@
 
 #pragma once
 
+#ifndef DT_NO_GUI
 #include <gtk/gtk.h>
+#else
+#include "common/darktable.h"
+#include "common/nogui_types.h"
+#endif
 #include <inttypes.h>
 
 typedef enum dt_lib_colorpicker_size_t

@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bauhaus/bauhaus.h"
 #include "common/histogram.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -30,15 +29,19 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
-#include "develop/imageop_gui.h"
 #include "develop/pixelpipe.h"
+#include "gui/presets.h"
+#include "iop/iop_api.h"
+
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/paint.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
-#include "iop/iop_api.h"
+#endif
 
 // 'white' is the value that is mapped to 1.0 after exposure correction
 #define exposure2white(x) exp2f(-(x))
@@ -74,6 +77,7 @@ typedef struct dt_iop_exposure_params_t
   gboolean compensate_hilite_pres;  // $DEFAULT: TRUE $DESCRIPTION: "compensate highlight preservation"
 } dt_iop_exposure_params_t;
 
+#ifndef DT_NO_GUI
 typedef struct dt_iop_exposure_gui_data_t
 {
   GtkWidget *mode;
@@ -97,6 +101,7 @@ typedef struct dt_iop_exposure_gui_data_t
   dt_aligned_pixel_t spot_RGB;
 
 } dt_iop_exposure_gui_data_t;
+#endif
 
 typedef struct dt_iop_exposure_data_t
 {
@@ -151,9 +156,11 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
+#ifndef DT_NO_GUI
 static float _exposure_proxy_get_exposure(dt_iop_module_t *self);
 static void _paint_hue(dt_iop_module_t *self);
 static void _exposure_set_black(dt_iop_module_t *self, const float black);
+#endif
 
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
@@ -371,6 +378,7 @@ void reload_defaults(dt_iop_module_t *self)
   // but ONLY if we're the first instance (to avoid multiple application)
   d->compensate_hilite_pres = dt_iop_is_first_instance(self->dev->iop, self);
 
+#ifndef DT_NO_GUI
   // both defaults above depend on the image and on the instance, so the
   // widgets have to be told about them again, as for sliders and comboboxes
   dt_iop_exposure_gui_data_t *g = self->gui_data;
@@ -381,6 +389,7 @@ void reload_defaults(dt_iop_module_t *self)
     dt_bauhaus_toggle_set_default(g->compensate_hilite_preserv,
                                   d->compensate_hilite_pres);
   }
+#endif
 }
 
 static void _deflicker_prepare_histogram(dt_iop_module_t *self,
@@ -473,12 +482,16 @@ static void _compute_deflicker_correction(dt_iop_exposure_params_t *p,
   *correction = p->deflicker_target_level - ev;
 }
 
+#ifndef DT_NO_GUI
 static gboolean _show_computed(gpointer user_data);
+#endif
 
 static void _process_common_setup(dt_iop_module_t *self,
                                   dt_dev_pixelpipe_iop_t *piece)
 {
+#ifndef DT_NO_GUI
   dt_iop_exposure_gui_data_t *g = self->gui_data;
+#endif
   dt_iop_exposure_data_t *d = piece->data;
 
   d->black = d->params.black;
@@ -494,6 +507,7 @@ static void _process_common_setup(dt_iop_module_t *self,
                                   d->deflicker_histogram, &d->deflicker_histogram_stats,
                                   &exposure);
 
+#ifndef DT_NO_GUI
     // second, show computed correction in UI.
     if(g && dt_pipe_is_preview(piece->pipe))
     {
@@ -503,6 +517,7 @@ static void _process_common_setup(dt_iop_module_t *self,
 
       g_idle_add(_show_computed, self);
     }
+#endif
   }
 
   const float white = exposure2white(exposure);
@@ -683,6 +698,7 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
+#ifndef DT_NO_GUI
 static void _autoexp_disable(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
@@ -758,6 +774,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_gui_update_collapsible_section(&g->cs);
 }
+#endif // DT_NO_GUI
 
 void init_global(dt_iop_module_so_t *self)
 {
@@ -779,6 +796,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 // commit_params() re-applies the compensations. Callers work in that domain
 // because p->black does too - black is never compensated - so the black clamps can
 // compare the two directly.
+#ifndef DT_NO_GUI
 static void _exposure_set_white(dt_iop_module_t *self,
                                 const float white)
 {
@@ -868,7 +886,7 @@ static float _exposure_proxy_get_effective_exposure(dt_iop_module_t *self)
 
 static void _exposure_proxy_handle_event(int n_press,
                                          gdouble delta,
-                                         GdkModifierType state,
+                                         guint state,
                                          const gboolean is_blackpoint)
 {
   const dt_iop_module_t *const self = darktable.develop->proxy.exposure.module;
@@ -1390,6 +1408,7 @@ void gui_cleanup(dt_iop_module_t *self)
 
   g_idle_remove_by_data(self);
 }
+#endif // DT_NO_GUI
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

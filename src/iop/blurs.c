@@ -17,6 +17,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"

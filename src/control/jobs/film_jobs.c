@@ -22,6 +22,7 @@
 #include "common/film.h"
 
 #include <stdlib.h>
+#include "gui/hooks.h"
 
 typedef struct dt_film_import1_t
 {

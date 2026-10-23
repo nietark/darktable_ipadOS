@@ -34,6 +34,7 @@
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/blend_gui_internal.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -46,6 +47,7 @@
 #include "dtgtk/paint.h"
 #include "dtgtk/sidepanel.h"
 #include "dtgtk/thumbtable.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 
@@ -90,6 +92,41 @@
 #endif
 
 #include <pthread.h>
+
+// the canvas event callbacks take GDK's modifier state, buttons and click
+// types as they are (common/input.h)
+G_STATIC_ASSERT((int)DT_MODIFIER_SHIFT == (int)GDK_SHIFT_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_CONTROL == (int)GDK_CONTROL_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_ALT == (int)GDK_MOD1_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_BUTTON1 == (int)GDK_BUTTON1_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_BUTTON2 == (int)GDK_BUTTON2_MASK);
+G_STATIC_ASSERT((int)DT_MODIFIER_BUTTON3 == (int)GDK_BUTTON3_MASK);
+G_STATIC_ASSERT((int)DT_BUTTON_PRIMARY == (int)GDK_BUTTON_PRIMARY);
+G_STATIC_ASSERT((int)DT_BUTTON_MIDDLE == (int)GDK_BUTTON_MIDDLE);
+G_STATIC_ASSERT((int)DT_BUTTON_SECONDARY == (int)GDK_BUTTON_SECONDARY);
+G_STATIC_ASSERT((int)DT_BUTTON_PRESS == (int)GDK_BUTTON_PRESS);
+G_STATIC_ASSERT((int)DT_BUTTON_DOUBLE_PRESS == (int)GDK_2BUTTON_PRESS);
+G_STATIC_ASSERT((int)DT_BUTTON_TRIPLE_PRESS == (int)GDK_3BUTTON_PRESS);
+
+gboolean dt_modifier_is(const uint32_t state,
+                        const uint32_t desired_modifier_mask)
+{
+  const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
+//desired_modifier_mask to be the bit for the Cmd key
+  return ((state | dt_modifier_shortcuts) & modifiers) == desired_modifier_mask;
+}
+
+gboolean dt_modifiers_include(const uint32_t state,
+                              const uint32_t desired_modifier_mask)
+{
+//TODO: on Macs, remap the GDK_CONTROL_MASK bit in
+//desired_modifier_mask to be the bit for the Cmd key
+  const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  // check whether all modifier bits of interest are turned on
+  return ((state | dt_modifier_shortcuts)
+          & (modifiers & desired_modifier_mask)) == desired_modifier_mask;
+}
 
 /*
  * NEW UI API
@@ -5318,6 +5355,118 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   return result.result == RESULT_YES;
 }
 
+dt_gui_database_choice_t dt_gui_database_corrupt_dialog(const char *filename,
+                                                        const char *quick_check_text,
+                                                        const gboolean has_snapshot)
+{
+  GtkWidget *dialog;
+  GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+  const char* label_options = NULL;
+
+  if(has_snapshot)
+  {
+    dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                         NULL,
+                                         dflags,
+                                         _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                         _("_attempt restore"), GTK_RESPONSE_ACCEPT,
+                                         _("_delete database"), GTK_RESPONSE_REJECT,
+                                         NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+    label_options = _("do you want to close darktable now to manually restore\n"
+                      "the database from a backup, attempt an automatic restore\n"
+                      "from the most recent snapshot or delete the corrupted database\n"
+                      "and start with a new one?");
+  }
+  else
+  {
+    dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                         NULL,
+                                         dflags,
+                                         _("_close darktable"), GTK_RESPONSE_CLOSE,
+                                         _("_delete database"), GTK_RESPONSE_REJECT,
+                                         NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
+    label_options = _("do you want to close darktable now to manually restore\n"
+                      "the database from a backup or delete the corrupted database\n"
+                      "and start with a new one?");
+  }
+
+  char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
+                                               "\n"
+                                               "<span style='italic'>%s</span>\n"
+                                               "\n"
+                                               "it seems that the database is corrupted.\n"
+                                               "%s"
+                                               "%s"),
+                                             filename, quick_check_text, label_options);
+
+  GtkWidget *label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), label_text);
+  g_free(label_text);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label);
+
+  gtk_widget_show_all(dialog);
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  gtk_widget_destroy(dialog);
+
+  return resp == GTK_RESPONSE_ACCEPT ? DT_GUI_DATABASE_RESTORE
+       : resp == GTK_RESPONSE_REJECT ? DT_GUI_DATABASE_DELETE
+       : DT_GUI_DATABASE_CLOSE;
+}
+
+gboolean dt_gui_ask_delete_empty_dirs(GList *empty_dirs)
+{
+  const int n_empty_dirs = g_list_length(empty_dirs);
+
+  GtkWidget *dialog;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  dialog = gtk_message_dialog_new
+    (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+     GTK_BUTTONS_YES_NO,
+     ngettext("do you want to delete this empty directory?",
+              "do you want to delete these empty directories?", n_empty_dirs));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+
+  gtk_window_set_title(GTK_WINDOW(dialog),
+                       ngettext("delete empty directory?",
+                                "delete empty directories?", n_empty_dirs));
+
+  GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+
+  for(GList *list_iter = empty_dirs; list_iter; list_iter = g_list_next(list_iter))
+  {
+    gtk_list_store_insert_with_values(store, NULL, -1, 0, list_iter->data, -1);
+  }
+
+  GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
+  gtk_widget_set_name(GTK_WIDGET(tree), "delete-dialog");
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), gtk_cell_renderer_text_new(),
+                                                                       "text", 0, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  GtkWidget *scroll = dt_gui_scroll_wrap(tree);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(25));
+
+  dt_gui_dialog_add(GTK_DIALOG(dialog), scroll);
+
+  gtk_widget_show_all(dialog); // needed for the content area!
+
+  const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+  g_object_unref(store);
+
+  return res == GTK_RESPONSE_YES;
+}
+
 char *dt_gui_show_standalone_string_dialog(const char *title,
                                            const char *markup,
                                            const char *placeholder,
@@ -5452,6 +5601,28 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
   g_free(question);
 
   return resp == GTK_RESPONSE_YES;
+}
+
+gchar *dt_gui_select_destination_dir(const char *conf_key)
+{
+  gchar *dir = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  GtkFileChooserNative *filechooser =
+    gtk_file_chooser_native_new(_("select directory"),
+                                GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                _("_select as destination"),
+                                _("_cancel"));
+
+  dt_conf_get_folder_to_file_chooser(conf_key, GTK_FILE_CHOOSER(filechooser));
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_folder_from_file_chooser(conf_key, GTK_FILE_CHOOSER(filechooser));
+  }
+  g_object_unref(filechooser);
+
+  return dir;
 }
 
 // TODO: should that go to another place than gtk.c?

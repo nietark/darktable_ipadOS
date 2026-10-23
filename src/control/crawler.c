@@ -32,8 +32,11 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "crawler.h"
-#include "gui/gtk.h"
 #include "gui/splash.h"
+#include "views/view_types.h"
+#ifndef DT_NO_GUI
+#include "gui/gtk.h"
+#endif
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -71,6 +74,7 @@ static void _free_crawler_result(dt_control_crawler_result_t *entry)
   entry->image_path = entry->xmp_path = NULL;
 }
 
+#ifndef DT_NO_GUI
 static void _set_modification_time(char *filename,
                                    const time_t timestamp)
 {
@@ -108,6 +112,7 @@ static void _set_modification_time(char *filename,
   g_object_unref(gfile);
   if(info) g_clear_object(&info);
 }
+#endif
 
 // progress update intervals in seconds
 #define FAST_UPDATE 0.2
@@ -1049,6 +1054,8 @@ void dt_control_crawler_stop(const gboolean wait)
 
 /********************* the gui stuff *********************/
 
+#ifndef DT_NO_GUI
+
 typedef struct dt_control_crawler_gui_t
 {
   GtkTreeView *tree;
@@ -1588,6 +1595,17 @@ static void _crawler_show_image_list(GList *images, const gboolean modal)
   g_signal_connect(dialog, "response",
                    G_CALLBACK(dt_control_crawler_response_callback), gui);
 }
+
+#else
+// without a GUI there is nobody to resolve the conflicts, which the log
+// already reported
+static void _crawler_show_image_list(GList *images, const gboolean modal)
+{
+  for(GList *iter = images; iter; iter = g_list_next(iter))
+    _free_crawler_result((dt_control_crawler_result_t *)iter->data);
+  g_list_free_full(images, g_free);
+}
+#endif
 
 void dt_control_crawler_show_image_list(GList *images)
 {

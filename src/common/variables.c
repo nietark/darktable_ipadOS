@@ -18,7 +18,6 @@
 
 #include "common/debug.h"
 #include "common/darktable.h"
-#include "bauhaus/bauhaus.h"
 #include "common/variables.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -31,6 +30,9 @@
 #include "common/tags.h"
 #include "common/datetime.h"
 #include "control/conf.h"
+#ifndef DT_NO_GUI
+#include "bauhaus/bauhaus.h"
+#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -880,6 +882,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
         break;
     }
   }
+#ifndef DT_NO_GUI
+  // the colored dots of the image information panel
   else if((_has_prefix(variable, "LABELS.ICONS")
            || _has_prefix(variable, "LABELS_ICONS")
            || _has_prefix(variable, "LABELS.COLORICONS")
@@ -899,6 +903,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free(res);
   }
+#endif // DT_NO_GUI
   else if(_has_prefix(variable, "LABELS"))
   {
     // TODO: currently we concatenate all the color labels with a ','

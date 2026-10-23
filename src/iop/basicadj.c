@@ -29,6 +29,7 @@
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "develop/tiling.h"
+#include "dtgtk/togglebutton.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
 
@@ -407,13 +408,13 @@ int button_pressed(dt_iop_module_t *self,
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g && g->draw_selected_region && self->enabled)
   {
-    if((which == GDK_BUTTON_SECONDARY) || (which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS))
+    if((which == DT_BUTTON_SECONDARY) || (which == DT_BUTTON_PRIMARY && type == DT_BUTTON_DOUBLE_PRESS))
     {
       _turn_selregion_picker_off(self);
 
       handled = 1;
     }
-    else if(which == GDK_BUTTON_PRIMARY)
+    else if(which == DT_BUTTON_PRIMARY)
     {
       float wd, ht;
       dt_dev_get_preview_size(self->dev, &wd, &ht);

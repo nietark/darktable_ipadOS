@@ -25,6 +25,7 @@
 #include "common/selection.h"
 #include "control/control.h"
 #include "dtgtk/thumbtable.h"
+#include "views/view.h"
 #include <glib.h>
 #include <sqlite3.h>
 

@@ -29,6 +29,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "dtgtk/thumbnail.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"

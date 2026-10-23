@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/act_on.h"
+#include "views/view_types.h"
 #include "common/action.h"
 #include "common/history.h"
 #include "common/image.h"
@@ -44,26 +45,6 @@
 #include "lua/types.h"
 #include "lua/view.h"
 #endif
-
-/** available views flags, a view should return its type and
-    is also used in modules flags available in src/libs to
-    control which view the module should be available in also
-    which placement in the panels the module have.
-*/
-typedef enum dt_view_type_flags_t
-{
-  DT_VIEW_NONE       = 0,
-  DT_VIEW_LIGHTTABLE = 1 << 0,
-  DT_VIEW_DARKROOM   = 1 << 1,
-  DT_VIEW_TETHERING  = 1 << 2,
-  DT_VIEW_MAP        = 1 << 3,
-  DT_VIEW_SLIDESHOW  = 1 << 4,
-  DT_VIEW_PRINT      = 1 << 5,
-  DT_VIEW_MULTI      = 1 << 28,
-  DT_VIEW_FALLBACK   = 1 << 29,
-  DT_VIEW_OTHER      = 1 << 30, // for your own unpublished user view
-  DT_VIEW_ALL        = ~DT_VIEW_FALLBACK,
-} dt_view_type_flags_t;
 
 // flags that a view can set in flags()
 typedef enum dt_view_flags_t
@@ -153,23 +134,6 @@ typedef struct dt_view_t
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
 } dt_view_t;
 
-typedef enum dt_view_image_over_t
-{
-  DT_VIEW_ERR     = -1,
-  DT_VIEW_DESERT  =  0,
-  DT_VIEW_STAR_1  =  1,
-  DT_VIEW_STAR_2  =  2,
-  DT_VIEW_STAR_3  =  3,
-  DT_VIEW_STAR_4  =  4,
-  DT_VIEW_STAR_5  =  5,
-  DT_VIEW_REJECT  =  6,
-  DT_VIEW_GROUP   =  7,
-  DT_VIEW_AUDIO   =  8,
-  DT_VIEW_ALTERED =  9,
-  DT_VIEW_TAGS    = 10,
-  DT_VIEW_END     = 11, // placeholder for the end of the list
-} dt_view_image_over_t;
-
 /** returns an uppercase string of file extension **plus** some flag information **/
 char* dt_view_extend_modes_str(const char * name,
                                const gboolean is_hdr,
@@ -201,8 +165,6 @@ void dt_view_set_selection(const dt_imgid_t imgid,
                            const int value);
 /** toggle selection of given image. */
 void dt_view_toggle_selection(const dt_imgid_t imgid);
-/** get the type of the currently active view in darktable.view_manager. */
-dt_view_type_flags_t dt_view_get_current(void);
 
 /**
  * holds all relevant data needed to manage the view
@@ -431,8 +393,6 @@ void dt_view_manager_expose(dt_view_manager_t *vm,
                             const int32_t height,
                             const int32_t pointerx,
                             const int32_t pointery);
-/** reset current view. */
-void dt_view_manager_reset(dt_view_manager_t *vm);
 /** get current view of the view manager. */
 const dt_view_t *dt_view_manager_get_current_view(const dt_view_manager_t *vm);
 

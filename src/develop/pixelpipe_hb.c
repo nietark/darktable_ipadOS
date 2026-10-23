@@ -30,10 +30,9 @@
 #include "develop/develop.h"
 #include "develop/tiling.h"
 #include "develop/masks.h"
-#include "gui/gtk.h"
 #include "imageio/imageio_common.h"
 #include "libs/colorpicker.h"
-#include "libs/lib.h"
+#include "libs/lib_proxy.h"
 #include "gui/color_picker_proxy.h"
 #include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 

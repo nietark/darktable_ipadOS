@@ -41,6 +41,7 @@
 #include "bauhaus/bauhaus.h"
 #include "chart/common.h"
 #include "develop/imageop_gui.h"
+#include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
 #include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -2601,7 +2602,7 @@ int button_pressed(dt_iop_module_t *self,
   if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 0;
 
   // double click : reset the perspective correction
-  if(type == GDK_DOUBLE_BUTTON_PRESS)
+  if(type == DT_BUTTON_DOUBLE_PRESS)
   {
     dt_iop_gui_enter_critical_section(self);
     g->checker_ready = FALSE;

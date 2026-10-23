@@ -32,6 +32,7 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/thumbtable.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/preferences_dialogs.h"

@@ -23,7 +23,9 @@
 #include "common/image_cache.h"
 #include "common/selection.h"
 #include "control/signal.h"
+#ifndef DT_NO_GUI
 #include "gui/gtk.h"
+#endif
 
 #ifdef USE_LUA
 #include "lua/call.h"
@@ -194,6 +196,36 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
   return image_id;
 }
 
+gboolean dt_grouping_is_on(void)
+{
+#ifndef DT_NO_GUI
+  return darktable.gui && darktable.gui->grouping;
+#else
+  return FALSE;
+#endif
+}
+
+dt_imgid_t dt_grouping_get_expanded(void)
+{
+#ifndef DT_NO_GUI
+  return darktable.gui ? darktable.gui->expanded_group_id : NO_IMGID;
+#else
+  return NO_IMGID;
+#endif
+}
+
+void dt_grouping_set_expanded(const dt_imgid_t group_id)
+{
+#ifndef DT_NO_GUI
+  if(darktable.gui) darktable.gui->expanded_group_id = group_id;
+#endif
+}
+
+gboolean dt_grouping_is_collapsed(const dt_imgid_t group_id)
+{
+  return dt_grouping_is_on() && dt_grouping_get_expanded() != group_id;
+}
+
 /** get images of the group */
 GList *dt_grouping_get_group_images(const dt_imgid_t imgid)
 {
@@ -203,7 +235,7 @@ GList *dt_grouping_get_group_images(const dt_imgid_t imgid)
   {
     const dt_imgid_t img_group_id = image->group_id;
     dt_image_cache_read_release(image);
-    if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
+    if(dt_grouping_is_collapsed(img_group_id))
     {
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -248,7 +280,7 @@ void dt_grouping_add_grouped_images(GList **images)
     {
       const dt_imgid_t img_group_id = image->group_id;
       dt_image_cache_read_release(image);
-      if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id
+      if(dt_grouping_is_collapsed(img_group_id)
          && dt_selection_get_collection(darktable.selection))
       {
         sqlite3_stmt *stmt;

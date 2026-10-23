@@ -40,11 +40,21 @@
 #include "common/exif.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/selection.h"
+#include "common/styles.h"
 #include "common/system_signal_handling.h"
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
 #endif
+#ifndef DT_NO_GUI
 #include "bauhaus/bauhaus.h"
+#include "gui/accelerators.h"
+#include "gui/gtk.h"
+#include "gui/guides.h"
+#include "gui/styles.h"
+#include "gui/welcome.h"
+#include "libs/lib.h"
+#include "views/view.h"
+#endif
 #include "common/action.h"
 #include "common/file_location.h"
 #include "common/film.h"
@@ -74,18 +84,12 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
-#include "gui/accelerators.h"
-#include "gui/workspace.h"
-#include "gui/gtk.h"
-#include "gui/guides.h"
+#include "gui/hooks.h"
 #include "gui/presets.h"
-#include "gui/styles.h"
 #include "gui/splash.h"
-#include "gui/welcome.h"
+#include "gui/workspace.h"
 #include "imageio/imageio_module.h"
-#include "libs/lib.h"
 #include "lua/init.h"
-#include "views/view.h"
 #include "conf_gen.h"
 
 #include <errno.h>
@@ -604,6 +608,7 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
+#ifndef DT_NO_GUI
 static gboolean _is_directory(const gchar *input)
 {
   gboolean is_dir = FALSE;
@@ -641,6 +646,7 @@ static void _switch_to_new_filmroll(const gchar *input)
     free(filename);
   }
 }
+#endif
 
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
@@ -1165,6 +1171,14 @@ int dt_init(int argc,
             const gboolean load_data,
             lua_State *L)
 {
+#ifdef DT_NO_GUI
+  if(init_gui)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: this build has no GUI");
+    return 1;
+  }
+#endif
+
 #ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
     dt_print(DT_DEBUG_ALWAYS,
@@ -1933,7 +1947,9 @@ int dt_init(int argc,
 
     // ensure that we can load the Gtk theme early enough that the splash screen
     // doesn't change as we progress through startup
+#ifndef DT_NO_GUI
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
+#endif
   }
 
 #ifdef _OPENMP
@@ -2035,10 +2051,12 @@ int dt_init(int argc,
   // however after gtk_disable_setlocale
   if(init_gui)
   {
+#ifndef DT_NO_GUI
     gtk_init(&argc, &argv);
 
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
+#endif
 
     if(user_dir_failed)
     {
@@ -2216,12 +2234,15 @@ int dt_init(int argc,
   // idem for folder reachability
   if(init_gui)
   {
+#ifndef DT_NO_GUI
     darktable.gui->grouping = dt_conf_get_bool("ui_last/grouping");
+#endif
     dt_film_set_folder_status();
   }
 
   // the update crawl needs to run after db and conf are up, but before LUA
   // starts any scripts
+#ifndef DT_NO_GUI
   GList *changed_xmp_files = NULL;
   if(init_gui)
   {
@@ -2242,6 +2263,7 @@ int dt_init(int argc,
       dt_splash_screen_allow_create(FALSE); // allow splash screen if a message is to be displayed
     }
   }
+#endif
 
   /* for every resourcelevel we have 4 ints defined, either absolute or a fraction
      0 cpu available
@@ -2311,7 +2333,9 @@ int dt_init(int argc,
   // Initialize the password storage engine
   darktable.pwstorage = dt_pwstorage_new();
 
+#ifndef DT_NO_GUI
   darktable.guides = dt_guides_init();
+#endif
 
 #ifdef HAVE_GRAPHICSMAGICK
   dt_splash_screen_set_progress(_("initializing GraphicsMagick"));
@@ -2384,6 +2408,7 @@ int dt_init(int argc,
   // functions of the views depend on darktable.control->accels_* to
   // register their keyboard accelerators
 
+#ifndef DT_NO_GUI
   if(init_gui)
   {
     dt_splash_screen_set_progress(_("initializing GUI"));
@@ -2402,6 +2427,7 @@ int dt_init(int argc,
         && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
 
   }
+#endif
 
   dt_splash_screen_set_progress(_("loading image formats"));
 
@@ -2514,6 +2540,7 @@ int dt_init(int argc,
              "[dt_init] writing CPU/GPU diff pfm files for module '%s' processing the pipeline",
       darktable.dump_diff_pipe);
 
+#ifndef DT_NO_GUI
   if(init_gui)
   {
     dt_splash_screen_set_progress(_("loading views"));
@@ -2524,6 +2551,7 @@ int dt_init(int argc,
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
   }
+#endif
 
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
@@ -2531,6 +2559,7 @@ int dt_init(int argc,
   dt_lua_init(darktable.lua_state.state, lua_command);
 #endif
 
+#ifndef DT_NO_GUI
   if(init_gui)
   {
     dt_ctl_switch_mode_to("lighttable");
@@ -2610,6 +2639,7 @@ int dt_init(int argc,
     // for some reason this is needed on some systems to pick up the correctly themed cursor
     dt_control_change_cursor("default");
   }
+#endif
   free(config_info);
 
   // fire up a background job to perform sidecar writes
@@ -2714,7 +2744,9 @@ void dt_cleanup()
   if(init_gui)
   {
     // hide main window and do rest of the cleanup in the background
+#ifndef DT_NO_GUI
     gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
+#endif
     dt_gui_process_events();
 
     dt_ctl_switch_mode_to("");
@@ -2749,21 +2781,25 @@ void dt_cleanup()
 
   if(init_gui)
   {
+#ifndef DT_NO_GUI
     dt_lib_cleanup(darktable.lib);
     free(darktable.lib);
     darktable.lib = NULL;
     dt_view_manager_cleanup(darktable.view_manager);
     free(darktable.view_manager);
     darktable.view_manager = NULL;
+#endif
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
     darktable.imageio = NULL;
     dt_control_cleanup(TRUE);
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
+#ifndef DT_NO_GUI
     dt_gui_gtk_cleanup(darktable.gui);
     free(darktable.gui);
     darktable.gui = NULL;
+#endif
   }
   else
     dt_control_cleanup(FALSE);
@@ -2808,7 +2844,9 @@ void dt_cleanup()
   heif_deinit();
 #endif
 
+#ifndef DT_NO_GUI
   dt_guides_cleanup(darktable.guides);
+#endif
 
   if(perform_maintenance)
   {
@@ -2841,10 +2879,12 @@ void dt_cleanup()
 
   dt_database_destroy(darktable.db);
 
+#ifndef DT_NO_GUI
   if(init_gui)
   {
     dt_bauhaus_cleanup();
   }
+#endif
 
   if(darktable.noiseprofile_parser)
   {

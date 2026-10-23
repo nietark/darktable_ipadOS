@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <cairo.h>
+#include <glib.h>
 #include <string.h>
-#include <librsvg/rsvg.h>
 
 G_BEGIN_DECLS
 
@@ -159,16 +159,6 @@ void dt_copy_file(const char *src,
 // copy the contents of a file in dt's data directory to a new file
 void dt_copy_resource_file(const char *src,
                            const char *dst);
-
-// returns the RsvgDimensionData of a supplied RsvgHandle
-RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg);
-
-// renders svg data
-void dt_render_svg(RsvgHandle *svg, cairo_t *cr,
-                   const double width,
-                   const double height,
-                   const double offset_x,
-                   const double offset_y);
 
 // check if the path + basenames are the same (<=> only differ by the extension)
 gboolean dt_has_same_path_basename(const char *filename1,

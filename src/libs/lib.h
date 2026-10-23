@@ -26,6 +26,7 @@
 #include "common/iop_profile.h"
 #include "views/view.h"
 #include "gui/presets.h"
+#include "libs/lib_proxy.h"
 
 #ifdef USE_LUA
 #include "lua/lib.h"
@@ -33,72 +34,6 @@
 
 struct dt_lib_module_t;
 struct dt_colorpicker_sample_t;
-
-/** struct responsible for all library related shared routines and plugins. */
-typedef struct dt_lib_t
-{
-  GList *plugins;
-  struct dt_lib_module_t *gui_module;
-
-  /** Proxy functions for communication with views */
-  struct
-  {
-    /** Colorpicker plugin hooks */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      struct dt_colorpicker_sample_t *primary_sample;
-      struct dt_iop_color_picker_t *picker_proxy;
-      GSList *live_samples;
-      struct dt_colorpicker_sample_t *selected_sample;
-      gboolean display_samples;
-      gboolean restrict_histogram;
-      int statistic;
-      void (*update_panel)(struct dt_lib_module_t *self);
-      void (*update_samples)(struct dt_lib_module_t *self);
-      void (*set_sample_box_area)(struct dt_lib_module_t *self,
-                                  const dt_boundingbox_t size);
-      void (*set_sample_point)(struct dt_lib_module_t *self,
-                               const float pos[2]);
-      void (*setup_sample)(struct dt_lib_module_t *self,
-                           const gboolean denoise,
-                           const gboolean pick_output);
-    } colorpicker;
-
-    /** Histogram processing hooks */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*process)(struct dt_lib_module_t *self, const float *const input,
-                      int width, int height,
-                      const dt_iop_order_iccprofile_info_t *const profile_info_from,
-                      const dt_iop_order_iccprofile_info_t *const profile_info_to);
-      void (*get_harmony)(struct dt_lib_module_t *self, dt_color_harmony_guide_t *guide);
-      void (*set_harmony)(struct dt_lib_module_t *self, const dt_color_harmony_guide_t *guide);
-      void (*set_scope)(struct dt_lib_module_t *self, int scope);
-      void (*set_type)(struct dt_lib_module_t *self, int type);
-      void (*get_sector_angles)(struct dt_lib_module_t *self,
-                                const dt_color_harmony_type_t type,
-                                const int rotation,
-                                float *angles,
-                                int *n);
-      void (*set_harmony_callback)(struct dt_lib_module_t *self,
-                                   void (*cb)(const dt_color_harmony_guide_t *, void *),
-                                   void *user_data);
-      gboolean is_linear;
-    } histogram;
-
-    struct
-    {
-      struct dt_lib_module_t *module;
-    } navigation;
-
-    struct
-    {
-      gboolean enabled;
-    } snapshots;
-  } proxy;
-} dt_lib_t;
 
 typedef struct dt_lib_module_t
 {

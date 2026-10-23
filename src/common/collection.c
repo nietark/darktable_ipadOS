@@ -18,6 +18,7 @@
 
 #include "common/collection.h"
 #include "common/debug.h"
+#include "common/grouping.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
@@ -34,6 +35,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifndef DT_NO_GUI
+#include "gui/gtk.h"
+#include "views/view.h"
+#endif
 
 #ifdef USE_LUA
 #include "lua/call.h"
@@ -269,7 +274,7 @@ int dt_collection_update(const dt_collection_t *collection)
   wq_no_group = g_strdup(wq);
 
   /* grouping */
-  if(darktable.gui && darktable.gui->grouping)
+  if(dt_grouping_is_on())
   {
     // clang-format off
     /* Show the expanded group... */
@@ -286,14 +291,14 @@ int dt_collection_update(const dt_collection_t *collection)
        "(SELECT id,"
        "        MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END)"
        " FROM main.images AS mi WHERE %s GROUP BY group_id)))",
-       darktable.gui->expanded_group_id, wq_no_group);
+       dt_grouping_get_expanded(), wq_no_group);
     // clang-format on
 
     /* Additionally, when a group is expanded, make sure the
      * representative image wasn't filtered out.  This is important,
      * because otherwise it may be impossible to collapse the group
      * again. */
-    dt_util_str_cat(&wq, " OR (mi.id = %d)", darktable.gui->expanded_group_id);
+    dt_util_str_cat(&wq, " OR (mi.id = %d)", dt_grouping_get_expanded());
   }
 
   // get all the sort items
@@ -2685,11 +2690,10 @@ void dt_collection_update_query(const dt_collection_t *collection,
                                 GList *list)
 {
   int next = -1;
-  if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY
-     && darktable.gui)
+  if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY)
   {
     // if the query has changed, we reset the expanded group
-    darktable.gui->expanded_group_id = NO_IMGID;
+    dt_grouping_set_expanded(NO_IMGID);
   }
 
   if(!collection->clone)
@@ -2898,12 +2902,14 @@ gboolean dt_collection_has_property(const dt_collection_properties_t property)
 
 gboolean dt_collection_hint_message_internal(void *message)
 {
+#ifndef DT_NO_GUI
   GtkWidget *count = dt_view_filter_get_count(darktable.view_manager);
   if(count)
   {
     gtk_label_set_markup(GTK_LABEL(count), message);
     gtk_widget_set_tooltip_markup(count, message);
   }
+#endif
   g_free(message);
 
   dt_control_hinter_message("");

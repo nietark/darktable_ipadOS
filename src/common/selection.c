@@ -16,13 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/act_on.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/grouping.h"
 #include "common/image_cache.h"
 #include "control/signal.h"
+#ifndef DT_NO_GUI
 #include "gui/gtk.h"
 #include "views/view.h"
+#endif
 
 typedef struct dt_selection_t
 {
@@ -68,9 +72,7 @@ static void _selection_select(dt_selection_t *selection,
       dt_image_cache_read_release(image);
 
       gchar *query = NULL;
-      if(!darktable.gui
-         || !darktable.gui->grouping
-         || darktable.gui->expanded_group_id == img_group_id
+      if(!dt_grouping_is_collapsed(img_group_id)
          || !selection->collection)
       {
         query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images (imgid)"
@@ -226,9 +228,7 @@ void dt_selection_deselect(dt_selection_t *selection,
       dt_image_cache_read_release(image);
 
       gchar *query = NULL;
-      if(!darktable.gui
-         || !darktable.gui->grouping
-         || darktable.gui->expanded_group_id == img_group_id)
+      if(!dt_grouping_is_collapsed(img_group_id))
       {
         query = g_strdup_printf("DELETE FROM main.selected_images WHERE imgid = %u", imgid);
       }

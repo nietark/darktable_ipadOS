@@ -32,6 +32,7 @@
 #include "common/darktable.h"
 #include "control/conf.h"
 #include "develop/develop.h"
+#include "develop/blend_gui.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/togglebutton.h"

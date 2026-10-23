@@ -32,6 +32,7 @@
 #include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -4851,14 +4852,14 @@ int button_pressed(dt_iop_module_t *self,
   gboolean handled = FALSE;
 
   // avoid unexpected back to lt mode:
-  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
+  if(type == DT_BUTTON_DOUBLE_PRESS && which == DT_BUTTON_PRIMARY)
     return TRUE;
 
   float wd, ht;
   if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 1;
 
   // if we start to draw a straightening line
-  if(!g->lines && which == GDK_BUTTON_SECONDARY)
+  if(!g->lines && which == DT_BUTTON_SECONDARY)
   {
     dt_control_change_cursor("crosshair");
     g->straightening = TRUE;
@@ -4907,12 +4908,12 @@ int button_pressed(dt_iop_module_t *self,
 
   // if shift button is pressed go into bounding mode (selecting or deselecting
   // in a rectangle area)
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
+  if(dt_modifier_is(state, DT_MODIFIER_SHIFT))
   {
     g->lastx = pzx;
     g->lasty = pzy;
 
-    g->isbounding = (which == GDK_BUTTON_SECONDARY) ? ASHIFT_BOUNDING_DESELECT : ASHIFT_BOUNDING_SELECT;
+    g->isbounding = (which == DT_BUTTON_SECONDARY) ? ASHIFT_BOUNDING_DESELECT : ASHIFT_BOUNDING_SELECT;
     dt_control_change_cursor("crosshair");
 
     return TRUE;
@@ -4933,7 +4934,7 @@ int button_pressed(dt_iop_module_t *self,
             !(g->current_structure_method == ASHIFT_METHOD_QUAD
               || g->current_structure_method == ASHIFT_METHOD_LINES));
 
-  if((g->current_structure_method == ASHIFT_METHOD_LINES && which == GDK_BUTTON_PRIMARY)
+  if((g->current_structure_method == ASHIFT_METHOD_LINES && which == DT_BUTTON_PRIMARY)
      || g->current_structure_method == ASHIFT_METHOD_QUAD)
   {
     // we search the selected line and mark it as the moved line
@@ -4964,7 +4965,7 @@ int button_pressed(dt_iop_module_t *self,
     {
       if(g->points_idx[n].near == 0) continue;
 
-      if(which == GDK_BUTTON_SECONDARY)
+      if(which == DT_BUTTON_SECONDARY)
       {
         if(g->current_structure_method != ASHIFT_METHOD_LINES)
           g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
@@ -5011,7 +5012,7 @@ int button_pressed(dt_iop_module_t *self,
     }
   }
 
-  if(!handled && g->current_structure_method == ASHIFT_METHOD_LINES && which == GDK_BUTTON_PRIMARY)
+  if(!handled && g->current_structure_method == ASHIFT_METHOD_LINES && which == DT_BUTTON_PRIMARY)
   {
     // start to draw a manual line
     g->draw_point_move = TRUE;
@@ -5055,7 +5056,7 @@ int button_pressed(dt_iop_module_t *self,
   // we switch into sweeping mode either if we anyhow take control
   // or if cursor was close to a line when button was pressed. in other
   // cases we hand over the event (for image panning)
-  if((take_control || handled) && which == GDK_BUTTON_SECONDARY)
+  if((take_control || handled) && which == DT_BUTTON_SECONDARY)
   {
     dt_control_change_cursor("not-allowed");
     g->isdeselecting = 1;
@@ -5163,7 +5164,7 @@ int button_released(dt_iop_module_t *self,
 
   // finalize the isbounding mode
   // if user has released the shift button in-between -> do nothing
-  if(g->isbounding != ASHIFT_BOUNDING_OFF && dt_modifier_is(state, GDK_SHIFT_MASK))
+  if(g->isbounding != ASHIFT_BOUNDING_OFF && dt_modifier_is(state, DT_MODIFIER_SHIFT))
   {
     gboolean handled = FALSE;
 
@@ -5216,7 +5217,7 @@ int button_released(dt_iop_module_t *self,
   g->crop_cx = g->crop_cy = -1.0f;
 
   // if we have deselected drawn lines, we need to update params
-  if(g->current_structure_method == ASHIFT_METHOD_LINES && which == GDK_BUTTON_SECONDARY)
+  if(g->current_structure_method == ASHIFT_METHOD_LINES && which == DT_BUTTON_SECONDARY)
   {
     // we save the lines in params
     _draw_save_lines_to_params(self);

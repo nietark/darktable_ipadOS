@@ -26,6 +26,7 @@
 // or in the panel's model tests, needs it; otherwise it is static
 
 #include "develop/blend.h"
+#include "develop/blend_gui.h"
 #include "develop/masks.h"
 
 G_BEGIN_DECLS
