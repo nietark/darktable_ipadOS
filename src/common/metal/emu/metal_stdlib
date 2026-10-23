@@ -1,0 +1,388 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2026 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// just enough of the Metal Shading Language standard library, in C++, to
+// compile and run darktable's Metal kernel ports on the CPU. Used only by
+// the emulator backend (dtcl_emu.cc); see dtcl.h.
+//
+// It is deliberately strict where Metal is: the vector math functions take
+// arguments of one type, so a call mixing a scalar and a vector, which may
+// not compile with Apple's compiler, fails here too.
+//
+// Two things differ from Metal and need the help of the build:
+//  - clang's vector types have no constructor syntax, so float4(a, b, c, d)
+//    is rewritten to make_float4(a, b, c, d) before compiling
+//    (tools/metal/metal_kernels.py emu)
+//  - unsuffixed floating constants are double in C++ and float in Metal,
+//    so the emulator compiles with -fsingle-precision-constant
+
+#pragma once
+
+#include <cfloat>
+#include <climits>
+#include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <type_traits>
+#include <utility>
+
+typedef unsigned int uint;
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+
+#define DTCL_VEC(T, N) typedef T T##N __attribute__((ext_vector_type(N)));
+#define DTCL_VECS(T) DTCL_VEC(T, 2) DTCL_VEC(T, 3) DTCL_VEC(T, 4)
+DTCL_VECS(float)
+DTCL_VECS(int)
+DTCL_VECS(uint)
+DTCL_VECS(char)
+DTCL_VECS(uchar)
+DTCL_VECS(short)
+DTCL_VECS(ushort)
+
+extern "C" void dtcl_emu_barrier(void);
+
+namespace metal
+{
+
+template <class T> struct vec_traits { static constexpr int n = 0; typedef T elem; };
+#define DTCL_TRAIT(T, N) template <> struct vec_traits<T##N> { static constexpr int n = N; typedef T elem; };
+#define DTCL_TRAITS(T) DTCL_TRAIT(T, 2) DTCL_TRAIT(T, 3) DTCL_TRAIT(T, 4)
+DTCL_TRAITS(float)
+DTCL_TRAITS(int)
+DTCL_TRAITS(uint)
+DTCL_TRAITS(char)
+DTCL_TRAITS(uchar)
+DTCL_TRAITS(short)
+DTCL_TRAITS(ushort)
+
+template <class T> constexpr bool is_vec = vec_traits<T>::n > 0;
+template <class T> constexpr int n_comp = vec_traits<T>::n ? vec_traits<T>::n : 1;
+
+// float4(a, b, c, d), float4(v3, w), float4(x), float4(int4), ...
+template <class V, class... A> inline V make_vec(A... a)
+{
+  typedef typename vec_traits<V>::elem E;
+  constexpr int N = vec_traits<V>::n;
+  constexpr int given = (0 + ... + n_comp<A>);
+  static_assert(given == N || (sizeof...(A) == 1 && given == 1), "wrong number of vector components");
+  E c[N > given ? N : given];
+  int k = 0;
+  auto put = [&](auto x)
+  {
+    typedef decltype(x) X;
+    if constexpr(is_vec<X>)
+      for(int i = 0; i < vec_traits<X>::n; i++) c[k++] = (E)x[i];
+    else
+      c[k++] = (E)x;
+  };
+  (put(a), ...);
+  V v;
+  for(int i = 0; i < N; i++) v[i] = (given == 1) ? c[0] : c[i];
+  return v;
+}
+
+template <class T, class S> inline T as_type(const S s)
+{
+  static_assert(sizeof(T) == sizeof(S), "as_type needs types of one size");
+  T t;
+  std::memcpy(&t, &s, sizeof(T));
+  return t;
+}
+
+// --- math: float scalars, and vectors of one type ---
+
+#define DTCL_UNARY(name, expr)                                                        \
+  inline float name(const float x) { return expr; }                                  \
+  template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V name(const V v) \
+  {                                                                                   \
+    V r;                                                                              \
+    for(int i = 0; i < vec_traits<V>::n; i++) r[i] = name((float)v[i]);              \
+    return r;                                                                         \
+  }
+
+#define DTCL_BINARY(name, expr)                                                                   \
+  inline float name(const float x, const float y) { return expr; }                               \
+  template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V name(const V a, const V b)   \
+  {                                                                                               \
+    V r;                                                                                          \
+    for(int i = 0; i < vec_traits<V>::n; i++) r[i] = name((float)a[i], (float)b[i]);             \
+    return r;                                                                                     \
+  }
+
+DTCL_UNARY(sqrt, std::sqrt(x))
+DTCL_UNARY(rsqrt, 1.0f / std::sqrt(x))
+DTCL_UNARY(exp, std::exp(x))
+DTCL_UNARY(exp2, std::exp2(x))
+DTCL_UNARY(exp10, std::pow(10.0f, x))
+DTCL_UNARY(log, std::log(x))
+DTCL_UNARY(log2, std::log2(x))
+DTCL_UNARY(log10, std::log10(x))
+DTCL_UNARY(sin, std::sin(x))
+DTCL_UNARY(cos, std::cos(x))
+DTCL_UNARY(tan, std::tan(x))
+DTCL_UNARY(asin, std::asin(x))
+DTCL_UNARY(acos, std::acos(x))
+DTCL_UNARY(atan, std::atan(x))
+DTCL_UNARY(sinh, std::sinh(x))
+DTCL_UNARY(cosh, std::cosh(x))
+DTCL_UNARY(tanh, std::tanh(x))
+DTCL_UNARY(fabs, std::fabs(x))
+DTCL_UNARY(floor, std::floor(x))
+DTCL_UNARY(ceil, std::ceil(x))
+DTCL_UNARY(round, std::round(x))
+DTCL_UNARY(rint, std::rint(x))
+DTCL_UNARY(trunc, std::trunc(x))
+DTCL_UNARY(fract, x - std::floor(x))
+DTCL_UNARY(saturate, std::fmin(std::fmax(x, 0.0f), 1.0f))
+DTCL_UNARY(sign, x > 0.0f ? 1.0f : (x < 0.0f ? -1.0f : (std::isnan(x) ? 0.0f : x)))
+
+DTCL_BINARY(pow, std::pow(x, y))
+DTCL_BINARY(powr, x < 0.0f ? NAN : std::pow(x, y))
+DTCL_BINARY(atan2, std::atan2(x, y))
+DTCL_BINARY(fmod, std::fmod(x, y))
+DTCL_BINARY(fmin, std::fmin(x, y))
+DTCL_BINARY(fmax, std::fmax(x, y))
+DTCL_BINARY(copysign, std::copysign(x, y))
+DTCL_BINARY(step, y < x ? 0.0f : 1.0f)
+
+inline float fma(const float a, const float b, const float c) { return std::fma(a, b, c); }
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V fma(const V a, const V b, const V c)
+{
+  V r;
+  for(int i = 0; i < vec_traits<V>::n; i++) r[i] = std::fma(a[i], b[i], c[i]);
+  return r;
+}
+
+inline float mix(const float a, const float b, const float t) { return a + (b - a) * t; }
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V mix(const V a, const V b, const V t)
+{
+  return a + (b - a) * t;
+}
+
+inline float smoothstep(const float e0, const float e1, const float x)
+{
+  const float t = std::fmin(std::fmax((x - e0) / (e1 - e0), 0.0f), 1.0f);
+  return t * t * (3.0f - 2.0f * t);
+}
+
+// clamp, min, max and abs also exist for integers
+inline float clamp(const float x, const float lo, const float hi) { return std::fmin(std::fmax(x, lo), hi); }
+inline int clamp(const int x, const int lo, const int hi) { return x < lo ? lo : (x > hi ? hi : x); }
+inline uint clamp(const uint x, const uint lo, const uint hi) { return x < lo ? lo : (x > hi ? hi : x); }
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V clamp(const V x, const V lo, const V hi)
+{
+  V r;
+  for(int i = 0; i < vec_traits<V>::n; i++) r[i] = clamp(x[i], lo[i], hi[i]);
+  return r;
+}
+
+inline float min(const float a, const float b) { return std::fmin(a, b); }
+inline float max(const float a, const float b) { return std::fmax(a, b); }
+inline int min(const int a, const int b) { return a < b ? a : b; }
+inline int max(const int a, const int b) { return a > b ? a : b; }
+inline uint min(const uint a, const uint b) { return a < b ? a : b; }
+inline uint max(const uint a, const uint b) { return a > b ? a : b; }
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V min(const V a, const V b)
+{
+  V r;
+  for(int i = 0; i < vec_traits<V>::n; i++) r[i] = min(a[i], b[i]);
+  return r;
+}
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V max(const V a, const V b)
+{
+  V r;
+  for(int i = 0; i < vec_traits<V>::n; i++) r[i] = max(a[i], b[i]);
+  return r;
+}
+
+inline int abs(const int x) { return x < 0 ? -x : x; }
+inline float abs(const float x) { return std::fabs(x); }
+
+// isnan and friends: bool for scalars; for vectors clang gives an integer
+// mask where Metal gives a bool vector, which select(), any() and all() hide
+inline bool isnan(const float x) { return std::isnan(x); }
+inline bool isinf(const float x) { return std::isinf(x); }
+inline bool isfinite(const float x) { return std::isfinite(x); }
+inline bool signbit(const float x) { return std::signbit(x); }
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline auto isnan(const V v) { return v != v; }
+
+template <class V, class M, std::enable_if_t<is_vec<V>, int> = 0> inline V select(const V a, const V b, const M c)
+{
+  V r;
+  for(int i = 0; i < vec_traits<V>::n; i++) r[i] = c[i] ? b[i] : a[i];
+  return r;
+}
+inline float select(const float a, const float b, const bool c) { return c ? b : a; }
+
+template <class M> inline bool any(const M m)
+{
+  for(int i = 0; i < n_comp<M>; i++) if(m[i]) return true;
+  return false;
+}
+template <class M> inline bool all(const M m)
+{
+  for(int i = 0; i < n_comp<M>; i++) if(!m[i]) return false;
+  return true;
+}
+
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline float dot(const V a, const V b)
+{
+  float s = 0.0f;
+  for(int i = 0; i < vec_traits<V>::n; i++) s += a[i] * b[i];
+  return s;
+}
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline float length(const V a)
+{
+  return std::sqrt(dot(a, a));
+}
+template <class V, std::enable_if_t<is_vec<V>, int> = 0> inline V normalize(const V a)
+{
+  return a / length(a);
+}
+inline float3 cross(const float3 a, const float3 b)
+{
+  return a.yzx * b.zxy - a.zxy * b.yzx;
+}
+
+// --- textures ---
+
+enum class access { sample, read, write, read_write };
+
+} // namespace metal
+
+// the storage behind an emulated texture, owned by dtcl_emu.cc
+struct dtcl_emu_image_t
+{
+  unsigned char *data;
+  size_t width, height;
+  int channels;  // 1, 2 or 4
+  int pixel;     // dtcl_pixel_t
+  size_t element_size;
+};
+
+namespace metal
+{
+
+template <class T, access A = access::sample> struct texture2d
+{
+  typedef std::conditional_t<std::is_same_v<T, float>, float4, uint4> V4;
+  const dtcl_emu_image_t *img;
+
+  uint get_width() const { return (uint)img->width; }
+  uint get_height() const { return (uint)img->height; }
+
+  V4 read(const uint2 p) const
+  {
+    static_assert(A == access::read || A == access::read_write, "texture is not readable");
+    // like Metal, missing channels read as 0 and alpha as 1
+    V4 v = { 0, 0, 0, 1 };
+    const unsigned char *px = img->data + (p.y * img->width + p.x) * img->element_size;
+    for(int c = 0; c < img->channels; c++)
+    {
+      if(img->pixel == 0) { float f; std::memcpy(&f, px + 4 * c, 4); v[c] = (T)f; }
+      else if(img->pixel == 1) { uint16_t u; std::memcpy(&u, px + 2 * c, 2); v[c] = (T)u; }
+      else v[c] = (T)px[c];
+    }
+    return v;
+  }
+
+  void write(const V4 v, const uint2 p) const
+  {
+    static_assert(A == access::write || A == access::read_write, "texture is not writable");
+    unsigned char *px = img->data + (p.y * img->width + p.x) * img->element_size;
+    for(int c = 0; c < img->channels; c++)
+    {
+      if(img->pixel == 0) { const float f = (float)v[c]; std::memcpy(px + 4 * c, &f, 4); }
+      else if(img->pixel == 1) { const uint16_t u = (uint16_t)v[c]; std::memcpy(px + 2 * c, &u, 2); }
+      else px[c] = (unsigned char)v[c];
+    }
+  }
+};
+
+// --- synchronization ---
+
+enum class mem_flags : int { mem_none = 0, mem_device = 1, mem_threadgroup = 2, mem_texture = 4 };
+inline mem_flags operator|(const mem_flags a, const mem_flags b) { return (mem_flags)((int)a | (int)b); }
+
+inline void threadgroup_barrier(const mem_flags flags) { dtcl_emu_barrier(); }
+
+} // namespace metal
+
+// the names a port can call unqualified; the emulator puts them into each
+// port's namespace with using-declarations, which hides the global C
+// library functions of the same names that would otherwise make calls such
+// as fmax(x, 0.5) ambiguous
+#define DTCL_EMU_USING                                                                         \
+  using metal::sqrt; using metal::rsqrt; using metal::exp; using metal::exp2;                  \
+  using metal::exp10; using metal::log; using metal::log2; using metal::log10;                 \
+  using metal::sin; using metal::cos; using metal::tan; using metal::asin; using metal::acos;  \
+  using metal::atan; using metal::sinh; using metal::cosh; using metal::tanh;                  \
+  using metal::fabs; using metal::floor; using metal::ceil; using metal::round;                \
+  using metal::rint; using metal::trunc; using metal::fract; using metal::saturate;            \
+  using metal::sign; using metal::pow; using metal::powr; using metal::atan2;                  \
+  using metal::fmod; using metal::fmin; using metal::fmax; using metal::copysign;              \
+  using metal::step; using metal::fma; using metal::mix; using metal::smoothstep;              \
+  using metal::clamp; using metal::min; using metal::max; using metal::abs;                    \
+  using metal::isnan; using metal::isinf; using metal::isfinite; using metal::signbit;         \
+  using metal::select; using metal::any; using metal::all; using metal::dot;                   \
+  using metal::length; using metal::normalize; using metal::cross; using metal::as_type;       \
+  using metal::texture2d; using metal::access; using metal::mem_flags;                         \
+  using metal::threadgroup_barrier;
+
+#define make_float2(...) metal::make_vec<float2>(__VA_ARGS__)
+#define make_float3(...) metal::make_vec<float3>(__VA_ARGS__)
+#define make_float4(...) metal::make_vec<float4>(__VA_ARGS__)
+#define make_int2(...) metal::make_vec<int2>(__VA_ARGS__)
+#define make_int3(...) metal::make_vec<int3>(__VA_ARGS__)
+#define make_int4(...) metal::make_vec<int4>(__VA_ARGS__)
+#define make_uint2(...) metal::make_vec<uint2>(__VA_ARGS__)
+#define make_uint3(...) metal::make_vec<uint3>(__VA_ARGS__)
+#define make_uint4(...) metal::make_vec<uint4>(__VA_ARGS__)
+#define make_uchar2(...) metal::make_vec<uchar2>(__VA_ARGS__)
+#define make_uchar3(...) metal::make_vec<uchar3>(__VA_ARGS__)
+#define make_uchar4(...) metal::make_vec<uchar4>(__VA_ARGS__)
+#define make_char2(...) metal::make_vec<char2>(__VA_ARGS__)
+#define make_char3(...) metal::make_vec<char3>(__VA_ARGS__)
+#define make_char4(...) metal::make_vec<char4>(__VA_ARGS__)
+#define make_short2(...) metal::make_vec<short2>(__VA_ARGS__)
+#define make_short4(...) metal::make_vec<short4>(__VA_ARGS__)
+#define make_ushort2(...) metal::make_vec<ushort2>(__VA_ARGS__)
+#define make_ushort4(...) metal::make_vec<ushort4>(__VA_ARGS__)
+
+// Metal's address spaces and function qualifiers mean nothing on the CPU.
+// DTCL_EMU_STRICT maps them to clang address spaces instead, for a
+// -fsyntax-only check that catches what Metal rejects, such as passing a
+// device pointer where a thread pointer is expected; such a build cannot run
+#define kernel
+#define thread
+#ifdef DTCL_EMU_STRICT
+#define device __attribute__((address_space(1)))
+#define constant __attribute__((address_space(2)))
+#define threadgroup __attribute__((address_space(3)))
+#else
+#define device
+#define constant
+#define threadgroup
+#endif
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
