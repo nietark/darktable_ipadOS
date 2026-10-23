@@ -28,6 +28,7 @@
 #include "common/opencl.h"
 #include "common/action.h"
 #include "common/input.h"
+#include "common/nogui_types.h"
 #include "control/settings.h"
 
 #if defined(__aarch64__)
@@ -39,11 +40,6 @@
 // gui types, so that this header does not need gtk.h
 struct _GtkWidget;
 struct _GdkEventCrossing;
-#ifdef DT_NO_GUI
-// a module's gui_data struct holds its widgets next to state that process()
-// also reads, so that struct has to compile in a build without GTK
-typedef struct _GtkWidget GtkWidget;
-#endif
 
 #if defined(__SSE__)
 #include <xmmintrin.h> // needed for _mm_stream_ps

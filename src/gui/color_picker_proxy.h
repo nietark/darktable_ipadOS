@@ -27,7 +27,9 @@
   a single color picker is available in a module.
 */
 
+#ifndef DT_NO_GUI
 #include <gtk/gtk.h>
+#endif
 #include "common/darktable.h"
 #include "develop/imageop.h"
 

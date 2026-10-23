@@ -18,7 +18,7 @@
 
 #include "common/debug.h"
 #include "develop/blend.h"
-#include "develop/blend_gui.h"
+#include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
 
@@ -42,8 +42,8 @@ const char *dt_masks_parametric_type_label(const dt_masks_form_t *const form)
   const dt_masks_point_parametric_t *p = form->points ? form->points->data : NULL;
   if(p)
   {
-    const dt_iop_gui_blendif_channel_t *channels =
-      dt_develop_blendif_channels_for_csp((int)p->colorspace);
+    const dt_develop_blendif_slot_t *channels =
+      dt_develop_blendif_slots_for_csp((int)p->colorspace);
     int nch = 0;
     if(channels)
       while(channels[nch].label) nch++;
@@ -65,8 +65,8 @@ gboolean dt_masks_parametric_is_noop(const dt_masks_form_t *const sel,
 {
   if(inverted || !sel || !(sel->type & DT_MASKS_PARAMETRIC) || !sel->points) return FALSE;
   const dt_masks_point_parametric_t *const p = sel->points->data;
-  const dt_iop_gui_blendif_channel_t *const channels =
-    dt_develop_blendif_channels_for_csp((int)p->colorspace);
+  const dt_develop_blendif_slot_t *const channels =
+    dt_develop_blendif_slots_for_csp((int)p->colorspace);
   if(!channels) return FALSE;
   for(int in_out = 0; in_out < 2; in_out++)
   {
@@ -82,8 +82,8 @@ gboolean dt_masks_parametric_sanitize(dt_masks_form_t *const form)
 {
   if(!form || !(form->type & DT_MASKS_PARAMETRIC) || !form->points) return FALSE;
   dt_masks_point_parametric_t *const p = form->points->data;
-  const dt_iop_gui_blendif_channel_t *const channels =
-    dt_develop_blendif_channels_for_csp((int)p->colorspace);
+  const dt_develop_blendif_slot_t *const channels =
+    dt_develop_blendif_slots_for_csp((int)p->colorspace);
   if(!channels) return FALSE;
   uint32_t nch = 0;
   while(channels[nch].label) nch++;
@@ -215,11 +215,11 @@ static int _parametric_get_mask_roi(const dt_iop_module_t *const module,
 
   dt_develop_blend_params_t tmp = *saved;
   tmp.blendif = p->blendif;
-  const dt_iop_gui_blendif_channel_t *channels =
-    dt_develop_blendif_channels_for_csp((int)p->colorspace);
+  const dt_develop_blendif_slot_t *channels =
+    dt_develop_blendif_slots_for_csp((int)p->colorspace);
   if(channels)
   {
-    const dt_iop_gui_blendif_channel_t *ch = &channels[p->channel];
+    const dt_develop_blendif_slot_t *ch = &channels[p->channel];
     if(p->disabled & 1) tmp.blendif &= ~(1u << ch->param_channels[0]);
     if(p->disabled & 2) tmp.blendif &= ~(1u << ch->param_channels[1]);
   }

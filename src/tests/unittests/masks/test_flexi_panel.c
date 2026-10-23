@@ -701,6 +701,31 @@ static void test_param_channel_tooltips(void **state)
   }
 }
 
+// processing reads a parametric form's channel from the slot table in
+// blend.c, the controls from the channel table in blend_gui.c: the two must
+// list the same channels, in the same order and on the same slots
+static void test_param_channel_slots_match_gui_channels(void **state)
+{
+  const int csps[] = { DEVELOP_BLEND_CS_LAB, DEVELOP_BLEND_CS_RGB_DISPLAY, DEVELOP_BLEND_CS_RGB_SCENE };
+  for(size_t i = 0; i < sizeof(csps) / sizeof(csps[0]); i++)
+  {
+    const dt_iop_gui_blendif_channel_t *gui = dt_develop_blendif_channels_for_csp(csps[i]);
+    const dt_develop_blendif_slot_t *slots = dt_develop_blendif_slots_for_csp(csps[i]);
+    assert_non_null(gui);
+    assert_non_null(slots);
+    size_t n = 0;
+    for(; gui[n].label; n++)
+    {
+      assert_non_null(slots[n].label);
+      assert_string_equal(slots[n].label, gui[n].label);
+      assert_int_equal(slots[n].param_channels[0], gui[n].param_channels[0]);
+      assert_int_equal(slots[n].param_channels[1], gui[n].param_channels[1]);
+    }
+    assert_null(slots[n].label);
+  }
+  assert_null(dt_develop_blendif_slots_for_csp(DEVELOP_BLEND_CS_NONE));
+}
+
 int main(void)
 {
   const struct CMUnitTest tests[] = {
@@ -769,6 +794,7 @@ int main(void)
     cmocka_unit_test_teardown(test_panel_state_no_separate_panel_for_utility_or_embedded, _teardown),
     cmocka_unit_test_teardown(test_pinning_collapsed_module_expands_iop, _teardown),
     cmocka_unit_test_teardown(test_param_channel_tooltips, _teardown),
+    cmocka_unit_test_teardown(test_param_channel_slots_match_gui_channels, _teardown),
   };
   return cmocka_run_group_tests(tests, NULL, NULL);
 }

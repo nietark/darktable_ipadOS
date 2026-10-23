@@ -101,6 +101,7 @@ FILE(GLOB SOURCE_FILES
   "common/undo.c"
   "common/usermanual_url.c"
   "common/utility.c"
+  "common/utility_svg.c"
   "common/variables.c"
   "common/wb_presets.c"
   "control/conf.c"

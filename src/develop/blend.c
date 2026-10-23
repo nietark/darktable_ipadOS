@@ -27,8 +27,50 @@
 #include "develop/masks.h"
 #include "develop/tiling.h"
 #include "develop/imageop_math.h"
-#include "develop/blend_gui.h"
 #include <math.h>
+
+#ifndef DT_NO_GUI
+#include "develop/blend_gui.h"
+#endif
+
+static const dt_develop_blendif_slot_t _Lab_slots[]
+    = { { N_("L"), { DEVELOP_BLENDIF_L_in, DEVELOP_BLENDIF_L_out } },
+        { N_("a"), { DEVELOP_BLENDIF_A_in, DEVELOP_BLENDIF_A_out } },
+        { N_("b"), { DEVELOP_BLENDIF_B_in, DEVELOP_BLENDIF_B_out } },
+        { N_("C"), { DEVELOP_BLENDIF_C_in, DEVELOP_BLENDIF_C_out } },
+        { N_("h"), { DEVELOP_BLENDIF_h_in, DEVELOP_BLENDIF_h_out } },
+        { NULL } };
+
+static const dt_develop_blendif_slot_t _rgb_slots[]
+    = { { N_("g"), { DEVELOP_BLENDIF_GRAY_in, DEVELOP_BLENDIF_GRAY_out } },
+        { N_("R"), { DEVELOP_BLENDIF_RED_in, DEVELOP_BLENDIF_RED_out } },
+        { N_("G"), { DEVELOP_BLENDIF_GREEN_in, DEVELOP_BLENDIF_GREEN_out } },
+        { N_("B"), { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out } },
+        { N_("H"), { DEVELOP_BLENDIF_H_in, DEVELOP_BLENDIF_H_out } },
+        { N_("S"), { DEVELOP_BLENDIF_S_in, DEVELOP_BLENDIF_S_out } },
+        { N_("L"), { DEVELOP_BLENDIF_l_in, DEVELOP_BLENDIF_l_out } },
+        { NULL } };
+
+static const dt_develop_blendif_slot_t _rgbj_slots[]
+    = { { N_("g"), { DEVELOP_BLENDIF_GRAY_in, DEVELOP_BLENDIF_GRAY_out } },
+        { N_("R"), { DEVELOP_BLENDIF_RED_in, DEVELOP_BLENDIF_RED_out } },
+        { N_("G"), { DEVELOP_BLENDIF_GREEN_in, DEVELOP_BLENDIF_GREEN_out } },
+        { N_("B"), { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out } },
+        { N_("Jz"), { DEVELOP_BLENDIF_Jz_in, DEVELOP_BLENDIF_Jz_out } },
+        { N_("Cz"), { DEVELOP_BLENDIF_Cz_in, DEVELOP_BLENDIF_Cz_out } },
+        { N_("hz"), { DEVELOP_BLENDIF_hz_in, DEVELOP_BLENDIF_hz_out } },
+        { NULL } };
+
+const dt_develop_blendif_slot_t *dt_develop_blendif_slots_for_csp(const int csp)
+{
+  switch(csp)
+  {
+  case DEVELOP_BLEND_CS_LAB: return _Lab_slots;
+  case DEVELOP_BLEND_CS_RGB_DISPLAY: return _rgb_slots;
+  case DEVELOP_BLEND_CS_RGB_SCENE: return _rgbj_slots;
+  default: return NULL;
+  }
+}
 
 typedef enum _develop_mask_post_processing
 {
@@ -344,6 +386,7 @@ void dt_masks_refine_bypass_cleanup(dt_dev_refine_bypass_t *const bypass)
   bypass->nkeys = 0;
 }
 
+#ifndef DT_NO_GUI
 static int _refine_key_compare(const void *a, const void *b)
 {
   const guint32 ka = *(const guint32 *)a;
@@ -375,11 +418,14 @@ static gboolean _refine_bypass_collect(const dt_masks_point_group_t *pt,
   return FALSE;
 }
 
+#endif // DT_NO_GUI
+
 void dt_masks_refine_bypass_commit(const dt_iop_module_t *const module,
                                    dt_dev_pixelpipe_iop_t *const piece)
 {
   dt_masks_refine_bypass_cleanup(&piece->refine_bypass);
 
+#ifndef DT_NO_GUI
   dt_iop_gui_blend_data_t *const bd = module ? module->blend_data : NULL;
   if(!bd) return;
 
@@ -424,6 +470,7 @@ void dt_masks_refine_bypass_commit(const dt_iop_module_t *const module,
            "[masks] refine bypass '%s': %d of %u table entries apply to this"
            " mask (mask_id=%d)",
            module->op, n, table_size, dt_develop_blend_mask_group_id(module, bp));
+#endif // DT_NO_GUI
 }
 
 // is the refinement of the whole flexi mask previewed as off?

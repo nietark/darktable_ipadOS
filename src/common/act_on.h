@@ -18,7 +18,11 @@
 
 #pragma once
 
-#include <gui/gtk.h>
+#include <glib.h>
+
+#include "common/darktable.h"
+
+struct _GtkWidget;
 
 // cache structure
 typedef struct dt_act_on_cache_t
@@ -60,7 +64,7 @@ int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force);
 void dt_act_on_reset_cache(const gboolean only_visible);
 
 // set the right class for the widget
-void dt_act_on_set_class(GtkWidget *widget);
+void dt_act_on_set_class(struct _GtkWidget *widget);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

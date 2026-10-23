@@ -23,7 +23,9 @@
 #include "common/image_cache.h"
 #include "common/selection.h"
 #include "control/signal.h"
+#ifndef DT_NO_GUI
 #include "gui/gtk.h"
+#endif
 
 #ifdef USE_LUA
 #include "lua/call.h"
@@ -195,6 +197,17 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
 }
 
 /** get images of the group */
+// does the lighttable show the group as one image? Without a GUI no group is
+// collapsed
+static gboolean _group_collapsed(const dt_imgid_t group_id)
+{
+#ifndef DT_NO_GUI
+  return darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != group_id;
+#else
+  return FALSE;
+#endif
+}
+
 GList *dt_grouping_get_group_images(const dt_imgid_t imgid)
 {
   GList *imgs = NULL;
@@ -203,7 +216,7 @@ GList *dt_grouping_get_group_images(const dt_imgid_t imgid)
   {
     const dt_imgid_t img_group_id = image->group_id;
     dt_image_cache_read_release(image);
-    if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
+    if(_group_collapsed(img_group_id))
     {
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -248,7 +261,7 @@ void dt_grouping_add_grouped_images(GList **images)
     {
       const dt_imgid_t img_group_id = image->group_id;
       dt_image_cache_read_release(image);
-      if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id
+      if(_group_collapsed(img_group_id)
          && dt_selection_get_collection(darktable.selection))
       {
         sqlite3_stmt *stmt;

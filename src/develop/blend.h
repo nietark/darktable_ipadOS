@@ -179,6 +179,19 @@ typedef enum dt_develop_blendif_channels_t
   DEVELOP_BLENDIF_OUTPUT_MASK = 0xF0F0
 } dt_develop_blendif_channels_t;
 
+// a parametric channel as processing sees it: its untranslated label and the
+// blendif slots of its input and output ranges. The channel tables in
+// blend_gui.c list the same channels in the same order, for the controls
+typedef struct dt_develop_blendif_slot_t
+{
+  const char *label;
+  dt_develop_blendif_channels_t param_channels[2];
+} dt_develop_blendif_slot_t;
+
+// the channels of a blend colorspace, ended by an entry with a NULL label, or
+// NULL when the colorspace has none
+const dt_develop_blendif_slot_t *dt_develop_blendif_slots_for_csp(const int csp);
+
 
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t

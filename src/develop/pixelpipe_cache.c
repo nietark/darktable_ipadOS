@@ -19,7 +19,7 @@
 #include "develop/pixelpipe_cache.h"
 #include "develop/format.h"
 #include "develop/pixelpipe.h"
-#include "libs/lib.h"
+#include "libs/lib_proxy.h"
 #include "libs/colorpicker.h"
 #include <stdlib.h>
 
